@@ -118,3 +118,33 @@ pub fn to_json_field_opt<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &O
         None         => Json::Null,
     });
 }
+
+
+// helpers to extract native value from JSON object field (for partial types)
+#[inline]
+pub fn from_json_field_partial<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<Option<T>,ParseError> where T: FromJson {
+    match json.get(field) {
+        Some(ref v) => T::from_json(&v).map(|o| Some(o)),
+        None        => Ok(None),
+    }
+}
+#[inline]
+pub fn from_json_field_opt_partial<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<Option<Option<T>>,ParseError> where T: FromJson {
+    from_json_field_opt(json, field).map(|o| Some(o))
+}
+
+
+// helpers to install native value into JSON object field (for partial types)
+#[inline]
+pub fn to_json_field_partial<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &Option<T>) where T: ToJson {
+    if let Some(ref vv) = *v {
+        to_json_field(json, field, vv)
+    };
+}
+
+#[inline]
+pub fn to_json_field_opt_partial<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &Option<Option<T>>) where T: ToJson {
+    if let Some(ref vv) = *v {
+        to_json_field_opt(json, field, &vv)
+    };
+}

@@ -3,7 +3,7 @@ use std::string::ToString;
 use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
-use jmaputil::{FromJson,ParseError,from_json_field,from_json_field_opt,to_json_field,to_json_field_opt};
+use jmaputil::*;
 
 
 // basic three-part Date type, YYYY-MM-DD
@@ -534,5 +534,140 @@ impl FromJson for Contact {
             }
             _ => Err(ParseError::InvalidJsonType("Contact".to_string())),
         }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct PartialContact {
+    id:                  Option<String>,
+    is_flagged:          Option<bool>,
+    avatar:              Option<Option<File>>,
+    prefix:              Option<String>,
+    first_name:          Option<String>,
+    last_name:           Option<String>,
+    suffix:              Option<String>,
+    nickname:            Option<String>,
+    birthday:            Option<Date>,
+    anniversary:         Option<Date>,
+    company:             Option<String>,
+    department:          Option<String>,
+    job_title:           Option<String>,
+    emails:              Option<Vec<ContactInformation<EmailType>>>,
+    default_email_index: Option<u64>,
+    phones:              Option<Vec<ContactInformation<PhoneType>>>,
+    online:              Option<Vec<ContactInformation<OnlineType>>>,
+    addresses:           Option<Vec<Address>>,
+    notes:               Option<String>,
+}
+
+impl Default for PartialContact {
+    fn default() -> PartialContact {
+        PartialContact {
+            id:                  None,
+            is_flagged:          None,
+            avatar:              None,
+            prefix:              None,
+            first_name:          None,
+            last_name:           None,
+            suffix:              None,
+            nickname:            None,
+            birthday:            None,
+            anniversary:         None,
+            company:             None,
+            department:          None,
+            job_title:           None,
+            emails:              None,
+            default_email_index: None,
+            phones:              None,
+            online:              None,
+            addresses:           None,
+            notes:               None,
+        }
+    }
+}
+
+impl ToJson for PartialContact {
+    fn to_json(&self) -> Json {
+        let mut d = BTreeMap::<String,Json>::new();
+        to_json_field_partial(&mut d, "id", &self.id);
+        to_json_field_partial(&mut d, "isFlagged", &self.is_flagged);
+        to_json_field_opt_partial(&mut d, "avatar", &self.avatar);
+        to_json_field_partial(&mut d, "prefix", &self.prefix);
+        to_json_field_partial(&mut d, "firstName", &self.first_name);
+        to_json_field_partial(&mut d, "lastName", &self.last_name);
+        to_json_field_partial(&mut d, "suffix", &self.suffix);
+        to_json_field_partial(&mut d, "nickname", &self.nickname);
+        to_json_field_partial(&mut d, "birthday", &self.birthday);
+        to_json_field_partial(&mut d, "anniversary", &self.anniversary);
+        to_json_field_partial(&mut d, "company", &self.company);
+        to_json_field_partial(&mut d, "department", &self.department);
+        to_json_field_partial(&mut d, "jobTitle", &self.job_title);
+        to_json_field_partial(&mut d, "emails", &self.emails);
+        to_json_field_partial(&mut d, "defaultEmailIndex", &self.default_email_index);
+        to_json_field_partial(&mut d, "phones", &self.phones);
+        to_json_field_partial(&mut d, "online", &self.online);
+        to_json_field_partial(&mut d, "addresses", &self.addresses);
+        to_json_field_partial(&mut d, "notes", &self.notes);
+        Json::Object(d)
+    }
+}
+
+impl FromJson for PartialContact {
+    fn from_json(json: &Json) -> Result<PartialContact,ParseError> {
+        match *json {
+            Json::Object(ref o) => {
+                let mut contact = PartialContact::default();
+                contact.id                  = try!(from_json_field_partial(o, "id"));
+                contact.is_flagged          = try!(from_json_field_partial(o, "isFlagged"));
+                contact.avatar              = try!(from_json_field_opt_partial(o, "avatar"));
+                contact.prefix              = try!(from_json_field_partial(o, "prefix"));
+                contact.first_name          = try!(from_json_field_partial(o, "firstName"));
+                contact.last_name           = try!(from_json_field_partial(o, "lastName"));
+                contact.suffix              = try!(from_json_field_partial(o, "suffix"));
+                contact.nickname            = try!(from_json_field_partial(o, "nickname"));
+                contact.birthday            = try!(from_json_field_partial(o, "birthday"));
+                contact.anniversary         = try!(from_json_field_partial(o, "anniversary"));
+                contact.company             = try!(from_json_field_partial(o, "company"));
+                contact.department          = try!(from_json_field_partial(o, "department"));
+                contact.job_title           = try!(from_json_field_partial(o, "jobTitle"));
+                contact.emails              = try!(from_json_field_partial(o, "emails"));
+                contact.default_email_index = try!(from_json_field_partial(o, "defaultEmailIndex"));
+                contact.phones              = try!(from_json_field_partial(o, "phones"));
+                contact.online              = try!(from_json_field_partial(o, "online"));
+                contact.addresses           = try!(from_json_field_partial(o, "addresses"));
+                contact.notes               = try!(from_json_field_partial(o, "notes"));
+                Ok(contact)
+            }
+            _ => Err(ParseError::InvalidJsonType("Contact".to_string())),
+        }
+    }
+}
+
+
+impl Contact {
+    pub fn updated_with(&self, p: &PartialContact) -> Contact {
+        let mut c = self.clone();
+        let u = p.clone();
+        if let Some(v) = u.id                  { c.id = v };
+        if let Some(v) = u.is_flagged          { c.is_flagged = v };
+        if let Some(v) = u.avatar              { c.avatar = v };
+        if let Some(v) = u.prefix              { c.prefix = v };
+        if let Some(v) = u.first_name          { c.first_name = v };
+        if let Some(v) = u.last_name           { c.last_name = v };
+        if let Some(v) = u.suffix              { c.suffix = v };
+        if let Some(v) = u.nickname            { c.nickname = v };
+        if let Some(v) = u.birthday            { c.birthday = v };
+        if let Some(v) = u.anniversary         { c.anniversary = v };
+        if let Some(v) = u.company             { c.company = v };
+        if let Some(v) = u.department          { c.department = v };
+        if let Some(v) = u.job_title           { c.job_title = v };
+        if let Some(v) = u.emails              { c.emails = v };
+        if let Some(v) = u.default_email_index { c.default_email_index = v };
+        if let Some(v) = u.phones              { c.phones = v };
+        if let Some(v) = u.online              { c.online = v };
+        if let Some(v) = u.addresses           { c.addresses = v };
+        if let Some(v) = u.notes               { c.notes = v };
+        c
     }
 }

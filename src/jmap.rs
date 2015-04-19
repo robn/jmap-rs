@@ -10,11 +10,11 @@ use std::fs::File;
 use std::path::Path;
 use std::io::Read;
 use jmaputil::FromJson;
-use contact::Contact;
+use contact::{Contact,PartialContact};
 use rustc_serialize::json::{Json,ToJson};
 
-fn main() {
-    let path = Path::new("contact.json");
+fn load_json(filename: &str) -> Json {
+    let path = Path::new(filename);
     let mut file = match File::open(&path) {
         Ok(f) => f,
         Err(e) => panic!("couldn't open {}: {}", path.display(), Error::description(&e)),
@@ -25,18 +25,29 @@ fn main() {
         panic!("couldn't read {}: {}", path.display(), Error::description(&e));
     };
 
-    let json = match Json::from_str(raw.as_ref()) {
+    match Json::from_str(raw.as_ref()) {
         Ok(j) => j,
-        Err(e) => panic!("json parse error: {}", Error::description(&e)),
-    };
+        Err(e) => panic!("couldn't parse {}: {}", path.display(), Error::description(&e)),
+    }
+}
 
-    let contact = match Contact::from_json(&json) {
+fn main() {
+    let contact = match Contact::from_json(&load_json("contact.json")) {
         Ok(c) => c,
         Err(e) => panic!("contact parse error: {}", e),
     };
 
     println!("{:?}", contact);
-
     println!("{}", contact.to_json().to_string());
+
+    let update = match PartialContact::from_json(&load_json("update.json")) {
+        Ok(u) => u,
+        Err(e) => panic!("contact update parse error: {}", e),
+    };
+
+    let updated = contact.updated_with(&update);
+
+    println!("{:?}", updated);
+    println!("{}", updated.to_json().to_string());
 }
 
