@@ -1,13 +1,13 @@
 [package]
 name        = "jmap"
-description = "JMAP"
-repository  = "https://github.com/robn/jmap-rs"
 version     = "0.0.1"
+description = "JMAP parser/generator"
 license     = "MIT"
 authors     = [ "Robert Norris <robn@robn.io>" ]
+repository  = "https://github.com/robn/jmap-rs"
 
-[[bin]]
+[lib]
 name = "jmap"
 
 [dependencies]
-rustc-serialize = "0.3.12"
+rustc-serialize = "*"

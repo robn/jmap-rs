@@ -2,11 +2,9 @@ use std::collections::BTreeMap;
 use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
-use jmaputil::*;
-use jmaputil::Presence::*;
-
-use method::RequestMethod::*;
-
+use util::*;
+use util::Presence::*;
+use self::RequestMethod::*;
 use contact::PartialContact;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -369,7 +367,7 @@ impl FromJson for RequestMethod {
                 }
                 let method = try!(String::from_json(&a[0]));
                 let client_id = try!(String::from_json(&a[2]));
-                match method.as_str() {
+                match method.as_ref() {
                     "getContacts" =>
                         Ok(GetContacts(try!(GetRequestArgs::from_json(&a[1])), client_id)),
                     "getContactUpdates" =>

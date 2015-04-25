@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt;
 use rustc_serialize::json::{Json,ToJson};
 
-use jmaputil::Presence::*;
+use util::Presence::*;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ParseError {

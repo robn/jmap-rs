@@ -3,9 +3,8 @@ use std::string::ToString;
 use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
-use jmaputil::*;
-use jmaputil::Presence::*;
-
+use util::*;
+use util::Presence::*;
 
 // basic three-part Date type, YYYY-MM-DD
 // individual components may be 0, which will present as None
@@ -62,24 +61,23 @@ impl FromJson for Date {
                     nn => Some(nn),
                 }).collect();
 
-                match dv.as_slice() {
-                    [y,m,d] => {
-                        Ok(Date {
-                            y: y,
-                            m: try!(match m {
-                                Some(n) if n > 12 => Err(ParseError::InvalidStructure("Date".to_string())),
-                                Some(n) => Ok(Some(n as u8)),
-                                None => Ok(None),
-                            }),
-                            d: try!(match d {
-                                Some(n) if n > 31 => Err(ParseError::InvalidStructure("Date".to_string())),
-                                Some(n) => Ok(Some(n as u8)),
-                                None => Ok(None),
-                            }),
-                        })
-                    }
-                    _ => Err(ParseError::InvalidStructure("Date".to_string())),
+                if let false = dv.len() == 3 {
+                    return Err(ParseError::InvalidStructure("Date".to_string()));
                 }
+
+                Ok(Date {
+                    y: dv[0],
+                    m: try!(match dv[1] {
+                        Some(n) if n > 12 => Err(ParseError::InvalidStructure("Date".to_string())),
+                        Some(n) => Ok(Some(n as u8)),
+                        None => Ok(None),
+                    }),
+                    d: try!(match dv[2] {
+                        Some(n) if n > 31 => Err(ParseError::InvalidStructure("Date".to_string())),
+                        Some(n) => Ok(Some(n as u8)),
+                        None => Ok(None),
+                    }),
+                })
             },
             _ => Err(ParseError::InvalidJsonType("Date".to_string())),
         }
@@ -123,7 +121,7 @@ impl ToJson for EmailType {
 impl FromJson for EmailType {
     fn from_json(json: &Json) -> Result<EmailType,ParseError> {
         match *json {
-            Json::String(ref v) => match v.as_str() {
+            Json::String(ref v) => match v.as_ref() {
                 "personal" => Ok(EmailType::Personal),
                 "work"     => Ok(EmailType::Work),
                 "other"    => Ok(EmailType::Other),
@@ -173,7 +171,7 @@ impl ToJson for PhoneType {
 impl FromJson for PhoneType {
     fn from_json(json: &Json) -> Result<PhoneType,ParseError> {
         match *json {
-            Json::String(ref v) => match v.as_str() {
+            Json::String(ref v) => match v.as_ref() {
                 "home"   => Ok(PhoneType::Home),
                 "work"   => Ok(PhoneType::Work),
                 "mobile" => Ok(PhoneType::Mobile),
@@ -220,7 +218,7 @@ impl ToJson for OnlineType {
 impl FromJson for OnlineType {
     fn from_json(json: &Json) -> Result<OnlineType,ParseError> {
         match *json {
-            Json::String(ref v) => match v.as_str() {
+            Json::String(ref v) => match v.as_ref() {
                 "uri"      => Ok(OnlineType::Uri),
                 "username" => Ok(OnlineType::Username),
                 "other"    => Ok(OnlineType::Other),
@@ -268,7 +266,7 @@ impl ToJson for AddressType {
 impl FromJson for AddressType {
     fn from_json(json: &Json) -> Result<AddressType,ParseError> {
         match *json {
-            Json::String(ref v) => match v.as_str() {
+            Json::String(ref v) => match v.as_ref() {
                 "home"    => Ok(AddressType::Home),
                 "work"    => Ok(AddressType::Work),
                 "billing" => Ok(AddressType::Billing),

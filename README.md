@@ -10,16 +10,18 @@ CalDAV and CardDAV. See [jmap.io](http://jmap.io/) for more info.
 
 ## what is jmap-rs?
 
-A Rust implementation of JMAP. Initially, its just the parser and generator
-portions. Later, a server will be built on top of this, but I'm not yet sure if
-that will be part of jmap-rs directly or use it as a library.
+Everything you need to parse, generate and manipulate JMAP data structures from
+Rust. Its what you need if you're writing a JMAP server or client.
+
+(salada)[https://github.com/robn/salada] is a JMAP server that uses this
+library.
 
 ## status
 
-So far it can round-trip a JMAP Contact object into the correspond Rust
-structures and back. Most of my efforts so far are in learning the language and
-type system and getting a good set of tools and idioms established for building
-out the entire protocol.
+So far it can round-trip a JMAP Contact object and its related methods into the
+corresponding Rust structures and back. Most of my efforts so far are in
+learning the language and type system and getting a good set of tools and
+idioms established for building out the entire protocol.
 
 ## credits and license
 
