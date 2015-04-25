@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fmt;
 use rustc_serialize::json::{Json,ToJson};
 
+use jmaputil::Presence::*;
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ParseError {
@@ -30,6 +31,13 @@ impl fmt::Display for ParseError {
             ParseError::MissingField(ref e)     => format!("missing field \"{}\"", e),
         }.to_string())
     }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum Presence<T> {
+    Present(T),
+    Absent,
 }
 
 
@@ -81,70 +89,99 @@ impl<T> FromJson for Vec<T> where T: FromJson {
     }
 }
 
-
-// helpers to extract native value from JSON object field
-#[inline]
-pub fn from_json_field<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<T,ParseError> where T: FromJson {
-    match json.get(field) {
-        Some(ref v) => T::from_json(&v),
-        None        => Err(ParseError::MissingField(field.to_string())),
+impl<T> FromJson for BTreeMap<String,T> where T: FromJson {
+    fn from_json(json: &Json) -> Result<Self,ParseError> {
+        match *json {
+            Json::Object(ref o) => {
+                let mut m = BTreeMap::<String,T>::new();
+                for (k, v) in o.iter() {
+                    let vv = try!(T::from_json(v));
+                    m.insert(k.clone(), vv);
+                }
+                Ok(m)
+            },
+            _ => Err(ParseError::InvalidJsonType("BTreeMap".to_string()))
+        }
     }
 }
-#[inline]
-pub fn from_json_field_opt<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<Option<T>,ParseError> where T: FromJson {
-    match json.get(field) {
-        Some(ref v) => match **v {
-            Json::Null => Ok(None),
-            _ => match T::from_json(&v) {
-                Ok(vv) => Ok(Some(vv)),
-                Err(e) => Err(e),
+
+
+
+pub trait FromJsonField {
+    fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError>;
+}
+
+
+impl<T> FromJsonField for T where T: FromJson {
+    fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
+        match json.get(field) {
+            Some(ref v) => T::from_json(&v),
+            None        => Err(ParseError::MissingField(field.to_string())),
+        }
+    }
+}
+impl<T> FromJsonField for Option<T> where T: FromJson {
+    fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
+        match json.get(field) {
+            Some(v) => {
+                match *v {
+                    Json::Null => Ok(None),
+                    _ => match T::from_json(&v) {
+                        Ok(j)  => Ok(Some(j)),
+                        Err(e) => Err(e),
+                    }
+                }
             }
-        },
-        None => Ok(None),
+            None => Ok(None),
+        }
+    }
+}
+impl<T> FromJsonField for Presence<T> where T: FromJson {
+    fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
+        match json.get(field) {
+            Some(ref v) => {
+                match T::from_json(&v) {
+                    Ok(j)  => Ok(Present(j)),
+                    Err(e) => Err(e),
+                }
+            }
+            None => Ok(Absent),
+        }
+    }
+}
+impl <T> FromJsonField for Presence<Option<T>> where T: FromJson {
+    fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
+        match json.get(field) {
+            Some(v) => {
+                match *v {
+                    Json::Null => Ok(Present(None)),
+                    _ => match T::from_json(&v) {
+                        Ok(j)  => Ok(Present(Some(j))),
+                        Err(e) => Err(e),
+                    }
+                }
+            }
+            None => Ok(Absent),
+        }
     }
 }
 
 
-// helpers to install native value into JSON object field
-#[inline]
-pub fn to_json_field<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &T) where T: ToJson {
-    json.insert(field.to_string(), v.to_json());
+
+pub trait ToJsonField {
+    fn to_json_field(&self, json: &mut BTreeMap<String,Json>, field: &str);
 }
 
-#[inline]
-pub fn to_json_field_opt<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &Option<T>) where T: ToJson {
-    json.insert(field.to_string(), match *v {
-        Some(ref vv) => vv.to_json(),
-        None         => Json::Null,
-    });
-}
-
-
-// helpers to extract native value from JSON object field (for partial types)
-#[inline]
-pub fn from_json_field_partial<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<Option<T>,ParseError> where T: FromJson {
-    match json.get(field) {
-        Some(ref v) => T::from_json(&v).map(|o| Some(o)),
-        None        => Ok(None),
+impl<T> ToJsonField for T where T: ToJson {
+    fn to_json_field(&self, json: &mut BTreeMap<String,Json>, field: &str) {
+        json.insert(field.to_string(), self.to_json());
     }
 }
-#[inline]
-pub fn from_json_field_opt_partial<T>(json: &BTreeMap<String,Json>, field: &str) -> Result<Option<Option<T>>,ParseError> where T: FromJson {
-    from_json_field_opt(json, field).map(|o| Some(o))
-}
 
-
-// helpers to install native value into JSON object field (for partial types)
-#[inline]
-pub fn to_json_field_partial<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &Option<T>) where T: ToJson {
-    if let Some(ref vv) = *v {
-        to_json_field(json, field, vv)
-    };
-}
-
-#[inline]
-pub fn to_json_field_opt_partial<T>(json: &mut BTreeMap<String,Json>, field: &str, v: &Option<Option<T>>) where T: ToJson {
-    if let Some(ref vv) = *v {
-        to_json_field_opt(json, field, &vv)
-    };
+impl<T> ToJsonField for Presence<T> where T: ToJson {
+    fn to_json_field(&self, json: &mut BTreeMap<String,Json>, field: &str) {
+        if let Present(ref v) = *self {
+            json.insert(field.to_string(), v.to_json());
+        }
+    }
 }

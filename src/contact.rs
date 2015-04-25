@@ -4,6 +4,7 @@ use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
 use jmaputil::*;
+use jmaputil::Presence::*;
 
 
 // basic three-part Date type, YYYY-MM-DD
@@ -298,9 +299,9 @@ impl<T> Default for ContactInformation<T> where T: ContactType {
 impl<T> ToJson for ContactInformation<T> where T: ContactType {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
-        to_json_field(&mut d, "type", &self.typ);
-        to_json_field(&mut d, "value", &self.value);
-        to_json_field_opt(&mut d, "label", &self.label);
+        self.typ.to_json_field(&mut d, "type");
+        self.value.to_json_field(&mut d, "value");
+        self.label.to_json_field(&mut d, "label");
         Json::Object(d)
     }
 }
@@ -310,9 +311,9 @@ impl<T> FromJson for ContactInformation<T> where T: ContactType {
         match *json {
             Json::Object(ref o) => {
                 let mut ci = ContactInformation::<T>::default();
-                ci.typ   = try!(from_json_field(o, "type"));
-                ci.value = try!(from_json_field(o, "value"));
-                ci.label = try!(from_json_field_opt(o, "label"));
+                ci.typ   = try!(FromJsonField::from_json_field(o, "type"));
+                ci.value = try!(FromJsonField::from_json_field(o, "value"));
+                ci.label = try!(FromJsonField::from_json_field(o, "label"));
                 Ok(ci)
             },
             _ => Err(ParseError::InvalidJsonType("ContactInformation".to_string())),
@@ -350,13 +351,13 @@ impl Default for Address {
 impl ToJson for Address {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
-        to_json_field(&mut d, "type", &self.typ);
-        to_json_field(&mut d, "street", &self.street);
-        to_json_field(&mut d, "locality", &self.locality);
-        to_json_field(&mut d, "region", &self.region);
-        to_json_field(&mut d, "postcode", &self.postcode);
-        to_json_field(&mut d, "country", &self.country);
-        to_json_field_opt(&mut d, "label", &self.label);
+        self.typ.to_json_field(&mut d, "type");
+        self.street.to_json_field(&mut d, "street");
+        self.locality.to_json_field(&mut d, "locality");
+        self.region.to_json_field(&mut d, "region");
+        self.postcode.to_json_field(&mut d, "postcode");
+        self.country.to_json_field(&mut d, "country");
+        self.label.to_json_field(&mut d, "label");
         Json::Object(d)
     }
 }
@@ -366,13 +367,13 @@ impl FromJson for Address {
         match *json {
             Json::Object(ref o) => {
                 let mut address = Address::default();
-                address.typ      = try!(from_json_field(o, "type"));
-                address.street   = try!(from_json_field(o, "street"));
-                address.locality = try!(from_json_field(o, "locality"));
-                address.region   = try!(from_json_field(o, "region"));
-                address.postcode = try!(from_json_field(o, "postcode"));
-                address.country  = try!(from_json_field(o, "country"));
-                address.label    = try!(from_json_field_opt(o, "label"));
+                address.typ      = try!(FromJsonField::from_json_field(o, "type"));
+                address.street   = try!(FromJsonField::from_json_field(o, "street"));
+                address.locality = try!(FromJsonField::from_json_field(o, "locality"));
+                address.region   = try!(FromJsonField::from_json_field(o, "region"));
+                address.postcode = try!(FromJsonField::from_json_field(o, "postcode"));
+                address.country  = try!(FromJsonField::from_json_field(o, "country"));
+                address.label    = try!(FromJsonField::from_json_field(o, "label"));
                 Ok(address)
             },
             _ => Err(ParseError::InvalidJsonType("Address".to_string())),
@@ -405,10 +406,10 @@ impl Default for File {
 impl ToJson for File {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
-        to_json_field(&mut d, "url", &self.url);
-        to_json_field_opt(&mut d, "type", &self.typ);
-        to_json_field_opt(&mut d, "name", &self.name);
-        to_json_field_opt(&mut d, "size", &self.size);
+        self.url.to_json_field(&mut d, "url");
+        self.typ.to_json_field(&mut d, "type");
+        self.name.to_json_field(&mut d, "name");
+        self.size.to_json_field(&mut d, "size");
         Json::Object(d)
     }
 }
@@ -418,10 +419,10 @@ impl FromJson for File {
         match *json {
             Json::Object(ref o) => {
                 let mut file = File::default();
-                file.url  = try!(from_json_field(o, "url"));
-                file.typ  = try!(from_json_field_opt(o, "type"));
-                file.name = try!(from_json_field_opt(o, "name"));
-                file.size = try!(from_json_field_opt(o, "size"));
+                file.url  = try!(FromJsonField::from_json_field(o, "url"));
+                file.typ  = try!(FromJsonField::from_json_field(o, "type"));
+                file.name = try!(FromJsonField::from_json_field(o, "name"));
+                file.size = try!(FromJsonField::from_json_field(o, "size"));
                 Ok(file)
             }
             _ => Err(ParseError::InvalidJsonType("File".to_string())),
@@ -483,25 +484,25 @@ impl Default for Contact {
 impl ToJson for Contact {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
-        to_json_field(&mut d, "id", &self.id);
-        to_json_field(&mut d, "isFlagged", &self.is_flagged);
-        to_json_field_opt(&mut d, "avatar", &self.avatar);
-        to_json_field(&mut d, "prefix", &self.prefix);
-        to_json_field(&mut d, "firstName", &self.first_name);
-        to_json_field(&mut d, "lastName", &self.last_name);
-        to_json_field(&mut d, "suffix", &self.suffix);
-        to_json_field(&mut d, "nickname", &self.nickname);
-        to_json_field(&mut d, "birthday", &self.birthday);
-        to_json_field(&mut d, "anniversary", &self.anniversary);
-        to_json_field(&mut d, "company", &self.company);
-        to_json_field(&mut d, "department", &self.department);
-        to_json_field(&mut d, "jobTitle", &self.job_title);
-        to_json_field(&mut d, "emails", &self.emails);
-        to_json_field(&mut d, "defaultEmailIndex", &self.default_email_index);
-        to_json_field(&mut d, "phones", &self.phones);
-        to_json_field(&mut d, "online", &self.online);
-        to_json_field(&mut d, "addresses", &self.addresses);
-        to_json_field(&mut d, "notes", &self.notes);
+        self.id.to_json_field(&mut d, "id");
+        self.is_flagged.to_json_field(&mut d, "isFlagged");
+        self.avatar.to_json_field(&mut d, "avatar");
+        self.prefix.to_json_field(&mut d, "prefix");
+        self.first_name.to_json_field(&mut d, "firstName");
+        self.last_name.to_json_field(&mut d, "lastName");
+        self.suffix.to_json_field(&mut d, "suffix");
+        self.nickname.to_json_field(&mut d, "nickname");
+        self.birthday.to_json_field(&mut d, "birthday");
+        self.anniversary.to_json_field(&mut d, "anniversary");
+        self.company.to_json_field(&mut d, "company");
+        self.department.to_json_field(&mut d, "department");
+        self.job_title.to_json_field(&mut d, "jobTitle");
+        self.emails.to_json_field(&mut d, "emails");
+        self.default_email_index.to_json_field(&mut d, "defaultEmailIndex");
+        self.phones.to_json_field(&mut d, "phones");
+        self.online.to_json_field(&mut d, "online");
+        self.addresses.to_json_field(&mut d, "addresses");
+        self.notes.to_json_field(&mut d, "notes");
         Json::Object(d)
     }
 }
@@ -511,25 +512,25 @@ impl FromJson for Contact {
         match *json {
             Json::Object(ref o) => {
                 let mut contact = Contact::default();
-                contact.id                  = try!(from_json_field(o, "id"));
-                contact.is_flagged          = try!(from_json_field(o, "isFlagged"));
-                contact.avatar              = try!(from_json_field_opt(o, "avatar"));
-                contact.prefix              = try!(from_json_field(o, "prefix"));
-                contact.first_name          = try!(from_json_field(o, "firstName"));
-                contact.last_name           = try!(from_json_field(o, "lastName"));
-                contact.suffix              = try!(from_json_field(o, "suffix"));
-                contact.nickname            = try!(from_json_field(o, "nickname"));
-                contact.birthday            = try!(from_json_field(o, "birthday"));
-                contact.anniversary         = try!(from_json_field(o, "anniversary"));
-                contact.company             = try!(from_json_field(o, "company"));
-                contact.department          = try!(from_json_field(o, "department"));
-                contact.job_title           = try!(from_json_field(o, "jobTitle"));
-                contact.emails              = try!(from_json_field(o, "emails"));
-                contact.default_email_index = try!(from_json_field(o, "defaultEmailIndex"));
-                contact.phones              = try!(from_json_field(o, "phones"));
-                contact.online              = try!(from_json_field(o, "online"));
-                contact.addresses           = try!(from_json_field(o, "addresses"));
-                contact.notes               = try!(from_json_field(o, "notes"));
+                contact.id                  = try!(FromJsonField::from_json_field(o, "id"));
+                contact.is_flagged          = try!(FromJsonField::from_json_field(o, "isFlagged"));
+                contact.avatar              = try!(FromJsonField::from_json_field(o, "avatar"));
+                contact.prefix              = try!(FromJsonField::from_json_field(o, "prefix"));
+                contact.first_name          = try!(FromJsonField::from_json_field(o, "firstName"));
+                contact.last_name           = try!(FromJsonField::from_json_field(o, "lastName"));
+                contact.suffix              = try!(FromJsonField::from_json_field(o, "suffix"));
+                contact.nickname            = try!(FromJsonField::from_json_field(o, "nickname"));
+                contact.birthday            = try!(FromJsonField::from_json_field(o, "birthday"));
+                contact.anniversary         = try!(FromJsonField::from_json_field(o, "anniversary"));
+                contact.company             = try!(FromJsonField::from_json_field(o, "company"));
+                contact.department          = try!(FromJsonField::from_json_field(o, "department"));
+                contact.job_title           = try!(FromJsonField::from_json_field(o, "jobTitle"));
+                contact.emails              = try!(FromJsonField::from_json_field(o, "emails"));
+                contact.default_email_index = try!(FromJsonField::from_json_field(o, "defaultEmailIndex"));
+                contact.phones              = try!(FromJsonField::from_json_field(o, "phones"));
+                contact.online              = try!(FromJsonField::from_json_field(o, "online"));
+                contact.addresses           = try!(FromJsonField::from_json_field(o, "addresses"));
+                contact.notes               = try!(FromJsonField::from_json_field(o, "notes"));
                 Ok(contact)
             }
             _ => Err(ParseError::InvalidJsonType("Contact".to_string())),
@@ -540,49 +541,49 @@ impl FromJson for Contact {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct PartialContact {
-    id:                  Option<String>,
-    is_flagged:          Option<bool>,
-    avatar:              Option<Option<File>>,
-    prefix:              Option<String>,
-    first_name:          Option<String>,
-    last_name:           Option<String>,
-    suffix:              Option<String>,
-    nickname:            Option<String>,
-    birthday:            Option<Date>,
-    anniversary:         Option<Date>,
-    company:             Option<String>,
-    department:          Option<String>,
-    job_title:           Option<String>,
-    emails:              Option<Vec<ContactInformation<EmailType>>>,
-    default_email_index: Option<u64>,
-    phones:              Option<Vec<ContactInformation<PhoneType>>>,
-    online:              Option<Vec<ContactInformation<OnlineType>>>,
-    addresses:           Option<Vec<Address>>,
-    notes:               Option<String>,
+    id:                  Presence<String>,
+    is_flagged:          Presence<bool>,
+    avatar:              Presence<Option<File>>,
+    prefix:              Presence<String>,
+    first_name:          Presence<String>,
+    last_name:           Presence<String>,
+    suffix:              Presence<String>,
+    nickname:            Presence<String>,
+    birthday:            Presence<Date>,
+    anniversary:         Presence<Date>,
+    company:             Presence<String>,
+    department:          Presence<String>,
+    job_title:           Presence<String>,
+    emails:              Presence<Vec<ContactInformation<EmailType>>>,
+    default_email_index: Presence<u64>,
+    phones:              Presence<Vec<ContactInformation<PhoneType>>>,
+    online:              Presence<Vec<ContactInformation<OnlineType>>>,
+    addresses:           Presence<Vec<Address>>,
+    notes:               Presence<String>,
 }
 
 impl Default for PartialContact {
     fn default() -> PartialContact {
         PartialContact {
-            id:                  None,
-            is_flagged:          None,
-            avatar:              None,
-            prefix:              None,
-            first_name:          None,
-            last_name:           None,
-            suffix:              None,
-            nickname:            None,
-            birthday:            None,
-            anniversary:         None,
-            company:             None,
-            department:          None,
-            job_title:           None,
-            emails:              None,
-            default_email_index: None,
-            phones:              None,
-            online:              None,
-            addresses:           None,
-            notes:               None,
+            id:                  Absent,
+            is_flagged:          Absent,
+            avatar:              Absent,
+            prefix:              Absent,
+            first_name:          Absent,
+            last_name:           Absent,
+            suffix:              Absent,
+            nickname:            Absent,
+            birthday:            Absent,
+            anniversary:         Absent,
+            company:             Absent,
+            department:          Absent,
+            job_title:           Absent,
+            emails:              Absent,
+            default_email_index: Absent,
+            phones:              Absent,
+            online:              Absent,
+            addresses:           Absent,
+            notes:               Absent,
         }
     }
 }
@@ -590,25 +591,25 @@ impl Default for PartialContact {
 impl ToJson for PartialContact {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
-        to_json_field_partial(&mut d, "id", &self.id);
-        to_json_field_partial(&mut d, "isFlagged", &self.is_flagged);
-        to_json_field_opt_partial(&mut d, "avatar", &self.avatar);
-        to_json_field_partial(&mut d, "prefix", &self.prefix);
-        to_json_field_partial(&mut d, "firstName", &self.first_name);
-        to_json_field_partial(&mut d, "lastName", &self.last_name);
-        to_json_field_partial(&mut d, "suffix", &self.suffix);
-        to_json_field_partial(&mut d, "nickname", &self.nickname);
-        to_json_field_partial(&mut d, "birthday", &self.birthday);
-        to_json_field_partial(&mut d, "anniversary", &self.anniversary);
-        to_json_field_partial(&mut d, "company", &self.company);
-        to_json_field_partial(&mut d, "department", &self.department);
-        to_json_field_partial(&mut d, "jobTitle", &self.job_title);
-        to_json_field_partial(&mut d, "emails", &self.emails);
-        to_json_field_partial(&mut d, "defaultEmailIndex", &self.default_email_index);
-        to_json_field_partial(&mut d, "phones", &self.phones);
-        to_json_field_partial(&mut d, "online", &self.online);
-        to_json_field_partial(&mut d, "addresses", &self.addresses);
-        to_json_field_partial(&mut d, "notes", &self.notes);
+        self.id.to_json_field(&mut d, "id");
+        self.is_flagged.to_json_field(&mut d, "isFlagged");
+        self.avatar.to_json_field(&mut d, "avatar");
+        self.prefix.to_json_field(&mut d, "prefix");
+        self.first_name.to_json_field(&mut d, "firstName");
+        self.last_name.to_json_field(&mut d, "lastName");
+        self.suffix.to_json_field(&mut d, "suffix");
+        self.nickname.to_json_field(&mut d, "nickname");
+        self.birthday.to_json_field(&mut d, "birthday");
+        self.anniversary.to_json_field(&mut d, "anniversary");
+        self.company.to_json_field(&mut d, "company");
+        self.department.to_json_field(&mut d, "department");
+        self.job_title.to_json_field(&mut d, "jobTitle");
+        self.emails.to_json_field(&mut d, "emails");
+        self.default_email_index.to_json_field(&mut d, "defaultEmailIndex");
+        self.phones.to_json_field(&mut d, "phones");
+        self.online.to_json_field(&mut d, "online");
+        self.addresses.to_json_field(&mut d, "addresses");
+        self.notes.to_json_field(&mut d, "notes");
         Json::Object(d)
     }
 }
@@ -618,25 +619,25 @@ impl FromJson for PartialContact {
         match *json {
             Json::Object(ref o) => {
                 let mut contact = PartialContact::default();
-                contact.id                  = try!(from_json_field_partial(o, "id"));
-                contact.is_flagged          = try!(from_json_field_partial(o, "isFlagged"));
-                contact.avatar              = try!(from_json_field_opt_partial(o, "avatar"));
-                contact.prefix              = try!(from_json_field_partial(o, "prefix"));
-                contact.first_name          = try!(from_json_field_partial(o, "firstName"));
-                contact.last_name           = try!(from_json_field_partial(o, "lastName"));
-                contact.suffix              = try!(from_json_field_partial(o, "suffix"));
-                contact.nickname            = try!(from_json_field_partial(o, "nickname"));
-                contact.birthday            = try!(from_json_field_partial(o, "birthday"));
-                contact.anniversary         = try!(from_json_field_partial(o, "anniversary"));
-                contact.company             = try!(from_json_field_partial(o, "company"));
-                contact.department          = try!(from_json_field_partial(o, "department"));
-                contact.job_title           = try!(from_json_field_partial(o, "jobTitle"));
-                contact.emails              = try!(from_json_field_partial(o, "emails"));
-                contact.default_email_index = try!(from_json_field_partial(o, "defaultEmailIndex"));
-                contact.phones              = try!(from_json_field_partial(o, "phones"));
-                contact.online              = try!(from_json_field_partial(o, "online"));
-                contact.addresses           = try!(from_json_field_partial(o, "addresses"));
-                contact.notes               = try!(from_json_field_partial(o, "notes"));
+                contact.id                  = try!(FromJsonField::from_json_field(o, "id"));
+                contact.is_flagged          = try!(FromJsonField::from_json_field(o, "isFlagged"));
+                contact.avatar              = try!(FromJsonField::from_json_field(o, "avatar"));
+                contact.prefix              = try!(FromJsonField::from_json_field(o, "prefix"));
+                contact.first_name          = try!(FromJsonField::from_json_field(o, "firstName"));
+                contact.last_name           = try!(FromJsonField::from_json_field(o, "lastName"));
+                contact.suffix              = try!(FromJsonField::from_json_field(o, "suffix"));
+                contact.nickname            = try!(FromJsonField::from_json_field(o, "nickname"));
+                contact.birthday            = try!(FromJsonField::from_json_field(o, "birthday"));
+                contact.anniversary         = try!(FromJsonField::from_json_field(o, "anniversary"));
+                contact.company             = try!(FromJsonField::from_json_field(o, "company"));
+                contact.department          = try!(FromJsonField::from_json_field(o, "department"));
+                contact.job_title           = try!(FromJsonField::from_json_field(o, "jobTitle"));
+                contact.emails              = try!(FromJsonField::from_json_field(o, "emails"));
+                contact.default_email_index = try!(FromJsonField::from_json_field(o, "defaultEmailIndex"));
+                contact.phones              = try!(FromJsonField::from_json_field(o, "phones"));
+                contact.online              = try!(FromJsonField::from_json_field(o, "online"));
+                contact.addresses           = try!(FromJsonField::from_json_field(o, "addresses"));
+                contact.notes               = try!(FromJsonField::from_json_field(o, "notes"));
                 Ok(contact)
             }
             _ => Err(ParseError::InvalidJsonType("Contact".to_string())),
@@ -649,25 +650,25 @@ impl Contact {
     pub fn updated_with(&self, p: &PartialContact) -> Contact {
         let mut c = self.clone();
         let u = p.clone();
-        if let Some(v) = u.id                  { c.id = v };
-        if let Some(v) = u.is_flagged          { c.is_flagged = v };
-        if let Some(v) = u.avatar              { c.avatar = v };
-        if let Some(v) = u.prefix              { c.prefix = v };
-        if let Some(v) = u.first_name          { c.first_name = v };
-        if let Some(v) = u.last_name           { c.last_name = v };
-        if let Some(v) = u.suffix              { c.suffix = v };
-        if let Some(v) = u.nickname            { c.nickname = v };
-        if let Some(v) = u.birthday            { c.birthday = v };
-        if let Some(v) = u.anniversary         { c.anniversary = v };
-        if let Some(v) = u.company             { c.company = v };
-        if let Some(v) = u.department          { c.department = v };
-        if let Some(v) = u.job_title           { c.job_title = v };
-        if let Some(v) = u.emails              { c.emails = v };
-        if let Some(v) = u.default_email_index { c.default_email_index = v };
-        if let Some(v) = u.phones              { c.phones = v };
-        if let Some(v) = u.online              { c.online = v };
-        if let Some(v) = u.addresses           { c.addresses = v };
-        if let Some(v) = u.notes               { c.notes = v };
+        if let Present(v) = u.id                  { c.id = v };
+        if let Present(v) = u.is_flagged          { c.is_flagged = v };
+        if let Present(v) = u.avatar              { c.avatar = v };
+        if let Present(v) = u.prefix              { c.prefix = v };
+        if let Present(v) = u.first_name          { c.first_name = v };
+        if let Present(v) = u.last_name           { c.last_name = v };
+        if let Present(v) = u.suffix              { c.suffix = v };
+        if let Present(v) = u.nickname            { c.nickname = v };
+        if let Present(v) = u.birthday            { c.birthday = v };
+        if let Present(v) = u.anniversary         { c.anniversary = v };
+        if let Present(v) = u.company             { c.company = v };
+        if let Present(v) = u.department          { c.department = v };
+        if let Present(v) = u.job_title           { c.job_title = v };
+        if let Present(v) = u.emails              { c.emails = v };
+        if let Present(v) = u.default_email_index { c.default_email_index = v };
+        if let Present(v) = u.phones              { c.phones = v };
+        if let Present(v) = u.online              { c.online = v };
+        if let Present(v) = u.addresses           { c.addresses = v };
+        if let Present(v) = u.notes               { c.notes = v };
         c
     }
 }
