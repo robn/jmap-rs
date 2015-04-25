@@ -381,3 +381,28 @@ impl FromJson for RequestMethod {
         }
     }
 }
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct RequestBatch(pub Vec<RequestMethod>);
+
+impl Default for RequestBatch {
+    fn default() -> RequestBatch {
+        RequestBatch(vec!())
+    }
+}
+
+impl ToJson for RequestBatch {
+    fn to_json(&self) -> Json {
+        self.0.to_json()
+    }
+}
+
+impl FromJson for RequestBatch {
+    fn from_json(json: &Json) -> Result<RequestBatch,ParseError> {
+        match Vec::<RequestMethod>::from_json(json) {
+            Ok(v) => Ok(RequestBatch(v)),
+            Err(e) => Err(e),
+        }
+    }
+}
