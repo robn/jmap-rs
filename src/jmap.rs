@@ -2,6 +2,7 @@
 
 extern crate rustc_serialize;
 
+mod method;
 mod contact;
 mod jmaputil;
 
@@ -9,9 +10,12 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 use std::io::Read;
+
+use rustc_serialize::json::{Json,ToJson};
+
 use jmaputil::FromJson;
 use contact::{Contact,PartialContact};
-use rustc_serialize::json::{Json,ToJson};
+use method::RequestMethod;
 
 fn load_json(filename: &str) -> Json {
     let path = Path::new(filename);
@@ -31,7 +35,7 @@ fn load_json(filename: &str) -> Json {
     }
 }
 
-fn main() {
+fn test_contacts() {
     let contact = match Contact::from_json(&load_json("contact.json")) {
         Ok(c) => c,
         Err(e) => panic!("contact parse error: {}", e),
@@ -45,9 +49,26 @@ fn main() {
         Err(e) => panic!("contact update parse error: {}", e),
     };
 
+    println!("{:?}", update);
+    println!("{}", update.to_json().to_string());
+
     let updated = contact.updated_with(&update);
 
     println!("{:?}", updated);
     println!("{}", updated.to_json().to_string());
 }
 
+fn test_methods() {
+    let method = match RequestMethod::from_json(&load_json("method.json")) {
+        Ok(m) => m,
+        Err(e) => panic!("method parse error: {}", e),
+    };
+
+    println!("{:?}", method);
+    println!("{}", method.to_json().to_string());
+}
+
+fn main() {
+    //test_contacts();
+    test_methods();
+}

@@ -11,6 +11,7 @@ pub enum ParseError {
     InvalidJsonType(String),
     InvalidStructure(String),
     MissingField(String),
+    UnknownMethod(String),
 }
 
 impl Error for ParseError {
@@ -19,6 +20,7 @@ impl Error for ParseError {
             ParseError::InvalidJsonType(_)  => "invalid JSON type for conversion",
             ParseError::InvalidStructure(_) => "invalid value structure for conversion",
             ParseError::MissingField(_)     => "missing field",
+            ParseError::UnknownMethod(_)    => "unknown method",
         }
     }
 }
@@ -29,6 +31,7 @@ impl fmt::Display for ParseError {
             ParseError::InvalidJsonType(ref e)  => format!("invalid JSON type for conversion to {}", e),
             ParseError::InvalidStructure(ref e) => format!("invalid value structure for conversion to {}", e),
             ParseError::MissingField(ref e)     => format!("missing field \"{}\"", e),
+            ParseError::UnknownMethod(ref e)    => format!("unknown method \"{}\"", e),
         }.to_string())
     }
 }
