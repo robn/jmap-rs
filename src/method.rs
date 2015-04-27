@@ -9,9 +9,9 @@ use contact::PartialContact;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct GetRequestArgs {
-    ids:         Presence<Vec<String>>,
-    properties:  Presence<Vec<String>>,
-    since_state: Presence<String>,
+    pub ids:         Presence<Vec<String>>,
+    pub properties:  Presence<Vec<String>>,
+    pub since_state: Presence<String>,
 }
 
 impl Default for GetRequestArgs {
@@ -52,9 +52,9 @@ impl FromJson for GetRequestArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct GetResponseArgs {
-    state:     String,
-    ids:       Option<Vec<PartialContact>>,
-    not_found: Option<Vec<String>>,
+    pub state:     String,
+    pub ids:       Option<Vec<PartialContact>>,
+    pub not_found: Option<Vec<String>>,
 }
 
 impl Default for GetResponseArgs {
@@ -95,10 +95,10 @@ impl FromJson for GetResponseArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct GetUpdatesRequestArgs {
-    since_state:             String,
-    max_changes:             Presence<u64>,
-    fetch_records:           Presence<bool>,
-    fetch_record_properties: Presence<Vec<String>>,
+    pub since_state:             String,
+    pub max_changes:             Presence<u64>,
+    pub fetch_records:           Presence<bool>,
+    pub fetch_record_properties: Presence<Vec<String>>,
 }
 
 impl Default for GetUpdatesRequestArgs {
@@ -142,10 +142,10 @@ impl FromJson for GetUpdatesRequestArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct GetUpdatesResponseArgs {
-    old_state: String,
-    new_state: String,
-    changed:   Vec<String>,
-    removed:   Vec<String>,
+    pub old_state: String,
+    pub new_state: String,
+    pub changed:   Vec<String>,
+    pub removed:   Vec<String>,
 }
 
 impl Default for GetUpdatesResponseArgs {
@@ -189,10 +189,10 @@ impl FromJson for GetUpdatesResponseArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SetRequestArgs {
-    if_in_state: Presence<String>,
-    create:      Presence<BTreeMap<String,PartialContact>>,
-    update:      Presence<BTreeMap<String,PartialContact>>,
-    destroy:     Presence<Vec<String>>,
+    pub if_in_state: Presence<String>,
+    pub create:      Presence<BTreeMap<String,PartialContact>>,
+    pub update:      Presence<BTreeMap<String,PartialContact>>,
+    pub destroy:     Presence<Vec<String>>,
 }
 
 impl Default for SetRequestArgs {
@@ -236,14 +236,14 @@ impl FromJson for SetRequestArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SetResponseArgs {
-    old_state:     Option<String>,
-    new_state:     String,
-    created:       BTreeMap<String,PartialContact>,
-    updated:       Vec<String>,
-    destroyed:     Vec<String>,
-    not_created:   BTreeMap<String,SetError>,
-    not_updated:   BTreeMap<String,SetError>,
-    not_destroyed: BTreeMap<String,SetError>,
+    pub old_state:     Option<String>,
+    pub new_state:     String,
+    pub created:       BTreeMap<String,PartialContact>,
+    pub updated:       Vec<String>,
+    pub destroyed:     Vec<String>,
+    pub not_created:   BTreeMap<String,SetError>,
+    pub not_updated:   BTreeMap<String,SetError>,
+    pub not_destroyed: BTreeMap<String,SetError>,
 }
 
 impl Default for SetResponseArgs {
@@ -299,8 +299,8 @@ impl FromJson for SetResponseArgs {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SetError {
-    typ:         String,
-    description: Option<String>,
+    pub typ:         String,
+    pub description: Option<String>,
 }
 
 impl Default for SetError {

@@ -11,9 +11,9 @@ use util::Presence::*;
 // only minimal range sanity checks are done
 #[derive(Clone, PartialEq, Debug)]
 pub struct Date {
-    y: Option<u16>,
-    m: Option<u8>,
-    d: Option<u8>,
+    pub y: Option<u16>,
+    pub m: Option<u8>,
+    pub d: Option<u8>,
 }
 
 impl Default for Date {
@@ -283,9 +283,9 @@ impl FromJson for AddressType {
 // ContactInformation is a type, a value and an optional label
 #[derive(Clone, PartialEq, Debug)]
 pub struct ContactInformation<T: ContactType> {
-    typ:   T,
-    value: String,
-    label: Option<String>,
+    pub typ:   T,
+    pub value: String,
+    pub label: Option<String>,
 }
 
 impl<T> Default for ContactInformation<T> where T: ContactType {
@@ -323,13 +323,13 @@ impl<T> FromJson for ContactInformation<T> where T: ContactType {
 // Address is much like ContactInformation, but with multiple values
 #[derive(Clone, PartialEq, Debug)]
 pub struct Address {
-    typ:      AddressType,
-    label:    Option<String>,
-    street:   String,
-    locality: String,
-    region:   String,
-    postcode: String,
-    country:  String,
+    pub typ:      AddressType,
+    pub label:    Option<String>,
+    pub street:   String,
+    pub locality: String,
+    pub region:   String,
+    pub postcode: String,
+    pub country:  String,
 }
 
 impl Default for Address {
@@ -384,10 +384,10 @@ impl FromJson for Address {
 // type is a MIME type this time, so a freeform string
 #[derive(Clone, PartialEq, Debug)]
 pub struct File {
-    url:  String,
-    typ:  Option<String>,
-    name: Option<String>,
-    size: Option<u64>,
+    pub url:  String,
+    pub typ:  Option<String>,
+    pub name: Option<String>,
+    pub size: Option<u64>,
 }
 
 impl Default for File {
@@ -432,25 +432,25 @@ impl FromJson for File {
 // bringing it all together, a contact
 #[derive(Clone, PartialEq, Debug)]
 pub struct Contact {
-    id:                  String,
-    is_flagged:          bool,
-    avatar:              Option<File>,
-    prefix:              String,
-    first_name:          String,
-    last_name:           String,
-    suffix:              String,
-    nickname:            String,
-    birthday:            Date,
-    anniversary:         Date,
-    company:             String,
-    department:          String,
-    job_title:           String,
-    emails:              Vec<ContactInformation<EmailType>>,
-    default_email_index: u64,
-    phones:              Vec<ContactInformation<PhoneType>>,
-    online:              Vec<ContactInformation<OnlineType>>,
-    addresses:           Vec<Address>,
-    notes:               String,
+    pub id:                  String,
+    pub is_flagged:          bool,
+    pub avatar:              Option<File>,
+    pub prefix:              String,
+    pub first_name:          String,
+    pub last_name:           String,
+    pub suffix:              String,
+    pub nickname:            String,
+    pub birthday:            Date,
+    pub anniversary:         Date,
+    pub company:             String,
+    pub department:          String,
+    pub job_title:           String,
+    pub emails:              Vec<ContactInformation<EmailType>>,
+    pub default_email_index: u64,
+    pub phones:              Vec<ContactInformation<PhoneType>>,
+    pub online:              Vec<ContactInformation<OnlineType>>,
+    pub addresses:           Vec<Address>,
+    pub notes:               String,
 }
 
 impl Default for Contact {
@@ -539,25 +539,25 @@ impl FromJson for Contact {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct PartialContact {
-    id:                  Presence<String>,
-    is_flagged:          Presence<bool>,
-    avatar:              Presence<Option<File>>,
-    prefix:              Presence<String>,
-    first_name:          Presence<String>,
-    last_name:           Presence<String>,
-    suffix:              Presence<String>,
-    nickname:            Presence<String>,
-    birthday:            Presence<Date>,
-    anniversary:         Presence<Date>,
-    company:             Presence<String>,
-    department:          Presence<String>,
-    job_title:           Presence<String>,
-    emails:              Presence<Vec<ContactInformation<EmailType>>>,
-    default_email_index: Presence<u64>,
-    phones:              Presence<Vec<ContactInformation<PhoneType>>>,
-    online:              Presence<Vec<ContactInformation<OnlineType>>>,
-    addresses:           Presence<Vec<Address>>,
-    notes:               Presence<String>,
+    pub id:                  Presence<String>,
+    pub is_flagged:          Presence<bool>,
+    pub avatar:              Presence<Option<File>>,
+    pub prefix:              Presence<String>,
+    pub first_name:          Presence<String>,
+    pub last_name:           Presence<String>,
+    pub suffix:              Presence<String>,
+    pub nickname:            Presence<String>,
+    pub birthday:            Presence<Date>,
+    pub anniversary:         Presence<Date>,
+    pub company:             Presence<String>,
+    pub department:          Presence<String>,
+    pub job_title:           Presence<String>,
+    pub emails:              Presence<Vec<ContactInformation<EmailType>>>,
+    pub default_email_index: Presence<u64>,
+    pub phones:              Presence<Vec<ContactInformation<PhoneType>>>,
+    pub online:              Presence<Vec<ContactInformation<OnlineType>>>,
+    pub addresses:           Presence<Vec<Address>>,
+    pub notes:               Presence<String>,
 }
 
 impl Default for PartialContact {
