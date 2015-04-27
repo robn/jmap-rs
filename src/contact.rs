@@ -669,4 +669,57 @@ impl Contact {
         if let Present(v) = u.notes               { c.notes = v };
         c
     }
+
+    pub fn to_partial(&self) -> PartialContact {
+        PartialContact {
+            id:                  Present(self.id.clone()),
+            is_flagged:          Present(self.is_flagged),
+            avatar:              Present(self.avatar.clone()),
+            prefix:              Present(self.prefix.clone()),
+            first_name:          Present(self.first_name.clone()),
+            last_name:           Present(self.last_name.clone()),
+            suffix:              Present(self.suffix.clone()),
+            nickname:            Present(self.nickname.clone()),
+            birthday:            Present(self.birthday.clone()),
+            anniversary:         Present(self.anniversary.clone()),
+            company:             Present(self.company.clone()),
+            department:          Present(self.department.clone()),
+            job_title:           Present(self.job_title.clone()),
+            emails:              Present(self.emails.clone()),
+            default_email_index: Present(self.default_email_index),
+            phones:              Present(self.phones.clone()),
+            online:              Present(self.online.clone()),
+            addresses:           Present(self.addresses.clone()),
+            notes:               Present(self.notes.clone()),
+        }
+    }
+
+    pub fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContact {
+        let mut p = PartialContact::default();
+        for prop in properties.iter() {
+            match prop.as_ref() {
+                "id"                => p.id =                  Present(self.id.clone()),
+                "isFlagged"         => p.is_flagged =          Present(self.is_flagged),
+                "avatar"            => p.avatar =              Present(self.avatar.clone()),
+                "prefix"            => p.prefix =              Present(self.prefix.clone()),
+                "firstName"         => p.first_name =          Present(self.first_name.clone()),
+                "lastName"          => p.last_name =           Present(self.last_name.clone()),
+                "suffix"            => p.suffix =              Present(self.suffix.clone()),
+                "nickname"          => p.nickname =            Present(self.nickname.clone()),
+                "birthday"          => p.birthday =            Present(self.birthday.clone()),
+                "anniversary"       => p.anniversary =         Present(self.anniversary.clone()),
+                "company"           => p.company =             Present(self.company.clone()),
+                "department"        => p.department =          Present(self.department.clone()),
+                "jobTitle"          => p.job_title =           Present(self.job_title.clone()),
+                "emails"            => p.emails =              Present(self.emails.clone()),
+                "defaultEmailIndex" => p.default_email_index = Present(self.default_email_index),
+                "phones"            => p.phones =              Present(self.phones.clone()),
+                "online"            => p.online =              Present(self.online.clone()),
+                "addresses"         => p.addresses =           Present(self.addresses.clone()),
+                "notes"             => p.notes =               Present(self.notes.clone()),
+                _                   => (),
+            }
+        }
+        p
+    }
 }
