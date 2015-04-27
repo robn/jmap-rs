@@ -5,6 +5,7 @@ use rustc_serialize::json::{Json,ToJson};
 use util::*;
 use util::Presence::*;
 use self::RequestMethod::*;
+use self::ResponseMethod::*;
 use contact::PartialContact;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -384,6 +385,53 @@ impl FromJson for RequestMethod {
 
 
 #[derive(Clone, PartialEq, Debug)]
+pub enum ResponseMethod {
+    Contacts(GetResponseArgs, String),
+    ContactUpdates(GetUpdatesResponseArgs, String),
+    ContactsSet(SetResponseArgs, String),
+}
+
+impl ToJson for ResponseMethod {
+    fn to_json(&self) -> Json {
+        Json::Array(
+            match *self {
+                Contacts(ref args, ref client_id) =>
+                    vec!("contacts".to_json(), args.to_json(), client_id.to_json()),
+                ContactUpdates(ref args, ref client_id) =>
+                    vec!("contactUpdates".to_json(), args.to_json(), client_id.to_json()),
+                ContactsSet(ref args, ref client_id) =>
+                    vec!("contactsSet".to_json(), args.to_json(), client_id.to_json()),
+            }
+        )
+    }
+}
+
+impl FromJson for ResponseMethod {
+    fn from_json(json: &Json) -> Result<ResponseMethod,ParseError> {
+        match *json {
+            Json::Array(ref a) => {
+                if let false = a.len() == 3 {
+                    return Err(ParseError::InvalidStructure("ResponseMethod".to_string()));
+                }
+                let method = try!(String::from_json(&a[0]));
+                let client_id = try!(String::from_json(&a[2]));
+                match method.as_ref() {
+                    "contacts" =>
+                        Ok(Contacts(try!(GetResponseArgs::from_json(&a[1])), client_id)),
+                    "contactUpdates" =>
+                        Ok(ContactUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
+                    "contactsSet" =>
+                        Ok(ContactsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
+                    _ => Err(ParseError::UnknownMethod(method)),
+                }
+            },
+            _ => Err(ParseError::InvalidJsonType("ResponseMethod".to_string())),
+        }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
 pub struct RequestBatch(pub Vec<RequestMethod>);
 
 impl Default for RequestBatch {
@@ -402,6 +450,31 @@ impl FromJson for RequestBatch {
     fn from_json(json: &Json) -> Result<RequestBatch,ParseError> {
         match Vec::<RequestMethod>::from_json(json) {
             Ok(v) => Ok(RequestBatch(v)),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct ResponseBatch(pub Vec<ResponseMethod>);
+
+impl Default for ResponseBatch {
+    fn default() -> ResponseBatch {
+        ResponseBatch(vec!())
+    }
+}
+
+impl ToJson for ResponseBatch {
+    fn to_json(&self) -> Json {
+        self.0.to_json()
+    }
+}
+
+impl FromJson for ResponseBatch {
+    fn from_json(json: &Json) -> Result<ResponseBatch,ParseError> {
+        match Vec::<ResponseMethod>::from_json(json) {
+            Ok(v) => Ok(ResponseBatch(v)),
             Err(e) => Err(e),
         }
     }
