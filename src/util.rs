@@ -42,6 +42,14 @@ pub enum Presence<T> {
     Present(T),
     Absent,
 }
+impl<T> Presence<T> {
+    pub fn as_option<'a>(&'a self) -> Option<&'a T> {
+        match *self {
+            Present(ref tt) => Some(&tt),
+            Absent          => None,
+        }
+    }
+}
 
 
 // trait for things that can be created from a JSON fragment
