@@ -54,7 +54,7 @@ impl FromJson for GetRequestArgs {
 #[derive(Clone, PartialEq, Debug)]
 pub struct GetResponseArgs {
     pub state:     String,
-    pub ids:       Option<Vec<PartialContact>>,
+    pub list:      Option<Vec<PartialContact>>,
     pub not_found: Option<Vec<String>>,
 }
 
@@ -62,7 +62,7 @@ impl Default for GetResponseArgs {
     fn default() -> GetResponseArgs {
         GetResponseArgs {
             state:     "".to_string(),
-            ids:       None,
+            list:      None,
             not_found: None,
         }
     }
@@ -72,7 +72,7 @@ impl ToJson for GetResponseArgs {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.state.to_json_field(&mut d, "state");
-        self.ids.to_json_field(&mut d, "ids");
+        self.list.to_json_field(&mut d, "list");
         self.not_found.to_json_field(&mut d, "notFound");
         Json::Object(d)
     }
@@ -84,7 +84,7 @@ impl FromJson for GetResponseArgs {
             Json::Object(ref o) => {
                 let mut args = GetResponseArgs::default();
                 args.state       = try!(FromJsonField::from_json_field(o, "state"));
-                args.ids         = try!(FromJsonField::from_json_field(o, "ids"));
+                args.list        = try!(FromJsonField::from_json_field(o, "list"));
                 args.not_found   = try!(FromJsonField::from_json_field(o, "notFound"));
                 Ok(args)
             },
