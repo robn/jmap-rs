@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 use std::default::Default;
+use std::error::Error;
+use std::fmt;
 use rustc_serialize::json::{Json,ToJson};
 
 use util::*;
@@ -338,10 +340,157 @@ impl FromJson for SetError {
 
 
 #[derive(Clone, PartialEq, Debug)]
+pub struct ErrorDescription(pub String);
+
+impl ToJson for ErrorDescription {
+    fn to_json(&self) -> Json {
+        self.0.to_json()
+    }
+}
+
+impl FromJson for ErrorDescription {
+    fn from_json(json: &Json) -> Result<ErrorDescription,ParseError> {
+        match String::from_json(json) {
+            Ok(v) => Ok(ErrorDescription(v)),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum MethodError {
+    UnknownMethod(Presence<ErrorDescription>),
+    InvalidArguments(Presence<ErrorDescription>),
+    TooManyChanges,
+    CannotCalculateChanges,
+    StateMismatch,
+    AccountNotFound,
+    AccountNoMail,
+    AccountReadOnly,
+    AnchorNotFound,
+    NotFound,
+    InvalidMailboxes,
+    MaxQuotaReached,
+    FromAccountNotFound,
+    ToAccountNotFound,
+    FromAccountNoMail,
+    ToAccountNoMail,
+    AccountNoContacts,
+    AccountNoCalendars,
+    UnsupportedSort,
+}
+
+impl Error for MethodError {
+    fn description(&self) -> &str {
+        match *self {
+            MethodError::UnknownMethod(_)       => "unknown method",
+            MethodError::InvalidArguments(_)    => "invalid arguments for method",
+            MethodError::TooManyChanges         => "number of available changes is higher than requested max",
+            MethodError::CannotCalculateChanges => "can't calculate changes from supplied state",
+            MethodError::StateMismatch          => "supplied state does not match current state",
+            MethodError::AccountNotFound        => "account not found",
+            MethodError::AccountNoMail          => "account does not contain any mail data",
+            MethodError::AccountReadOnly        => "account is read-only",
+            MethodError::AnchorNotFound         => "requested anchor not found in message list",
+            MethodError::NotFound               => "requested file not found",
+            MethodError::InvalidMailboxes       => "mailbox not found or invalid mailbox combination",
+            MethodError::MaxQuotaReached        => "max quota reached",
+            MethodError::FromAccountNotFound    => "from account not found",
+            MethodError::ToAccountNotFound      => "to account not found",
+            MethodError::FromAccountNoMail      => "from account does not contain any mail data",
+            MethodError::ToAccountNoMail        => "to account does not contain any mail data",
+            MethodError::AccountNoContacts      => "account does not contain any contact data",
+            MethodError::AccountNoCalendars     => "account does not contain any calendar data",
+            MethodError::UnsupportedSort        => "unable to sort on requested properties",
+        }
+    }
+}
+
+impl fmt::Display for MethodError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match *self {
+            MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
+            MethodError::InvalidArguments(Present(ref d)) => format!("invalid arguments for method ({})", d.0),
+            ref e => e.description().to_string(),
+        })
+    }
+}
+
+impl ToJson for MethodError {
+    fn to_json(&self) -> Json {
+        let mut d = BTreeMap::<String,Json>::new();
+
+        match *self {
+            MethodError::UnknownMethod(_)       => "unknownMethod",
+            MethodError::InvalidArguments(_)    => "invalidArguments",
+            MethodError::TooManyChanges         => "tooManyChanges",
+            MethodError::CannotCalculateChanges => "cannotCalculateChanges",
+            MethodError::StateMismatch          => "stateMismatch",
+            MethodError::AccountNotFound        => "accountNotFound",
+            MethodError::AccountNoMail          => "accountNoMail",
+            MethodError::AccountReadOnly        => "accountReadOnly",
+            MethodError::AnchorNotFound         => "anchorNotFound",
+            MethodError::NotFound               => "notFound",
+            MethodError::InvalidMailboxes       => "invalidMailboxes",
+            MethodError::MaxQuotaReached        => "maxQuotaReached",
+            MethodError::FromAccountNotFound    => "fromAccountNotFound",
+            MethodError::ToAccountNotFound      => "toAccountNotFound",
+            MethodError::FromAccountNoMail      => "fromAccountNoMail",
+            MethodError::ToAccountNoMail        => "toAccountNoMail",
+            MethodError::AccountNoContacts      => "accountNoContacts",
+            MethodError::AccountNoCalendars     => "accountNoCalendars",
+            MethodError::UnsupportedSort        => "unsupportedSort",
+        }.to_string().to_json_field(&mut d, "type");
+
+        if let MethodError::InvalidArguments(ref desc) = *self {
+            desc.to_json_field(&mut d, "description");
+        }
+
+        Json::Object(d)
+    }
+}
+
+impl FromJson for MethodError {
+    fn from_json(json: &Json) -> Result<MethodError,ParseError> {
+        match *json {
+            Json::Object(ref o) => {
+                let typ: String = try!(FromJsonField::from_json_field(o, "type"));
+                match typ.as_ref() {
+                    "unknownMethod"          => Ok(MethodError::UnknownMethod(try!(FromJsonField::from_json_field(o, "description")))),
+                    "invalidArguments"       => Ok(MethodError::InvalidArguments(try!(FromJsonField::from_json_field(o, "description")))),
+                    "tooManyChanges"         => Ok(MethodError::TooManyChanges),
+                    "cannotCalculateChanges" => Ok(MethodError::CannotCalculateChanges),
+                    "stateMismatch"          => Ok(MethodError::StateMismatch),
+                    "accountNotFound"        => Ok(MethodError::AccountNotFound),
+                    "accountNoMail"          => Ok(MethodError::AccountNoMail),
+                    "accountReadOnly"        => Ok(MethodError::AccountReadOnly),
+                    "anchorNotFound"         => Ok(MethodError::AnchorNotFound),
+                    "notFound"               => Ok(MethodError::NotFound),
+                    "invalidMailboxes"       => Ok(MethodError::InvalidMailboxes),
+                    "maxQuotaReached"        => Ok(MethodError::MaxQuotaReached),
+                    "fromAccountNotFound"    => Ok(MethodError::FromAccountNotFound),
+                    "toAccountNotFound"      => Ok(MethodError::ToAccountNotFound),
+                    "fromAccountNoMail"      => Ok(MethodError::FromAccountNoMail),
+                    "toAccountNoMail"        => Ok(MethodError::ToAccountNoMail),
+                    "accountNoContacts"      => Ok(MethodError::AccountNoContacts),
+                    "accountNoCalendars"     => Ok(MethodError::AccountNoCalendars),
+                    "unsupportedSort"        => Ok(MethodError::UnsupportedSort),
+                    _                        => Err(ParseError::InvalidStructure("MethodError".to_string())),
+                }
+            },
+            _ => Err(ParseError::InvalidJsonType("MethodError".to_string())),
+        }
+    }
+}
+
+
+#[derive(Clone, PartialEq, Debug)]
 pub enum RequestMethod {
     GetContacts(GetRequestArgs, String),
     GetContactUpdates(GetUpdatesRequestArgs, String),
     SetContacts(SetRequestArgs, String),
+    RequestError(MethodError, String),
 }
 
 impl ToJson for RequestMethod {
@@ -354,6 +503,8 @@ impl ToJson for RequestMethod {
                     vec!("getContactUpdates".to_json(), args.to_json(), client_id.to_json()),
                 SetContacts(ref args, ref client_id) =>
                     vec!("setContacts".to_json(), args.to_json(), client_id.to_json()),
+                RequestError(ref args, ref client_id) =>
+                    vec!("error".to_json(), args.to_json(), client_id.to_json()),
             }
         )
     }
@@ -375,7 +526,9 @@ impl FromJson for RequestMethod {
                         Ok(GetContactUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
                     "setContacts" =>
                         Ok(SetContacts(try!(SetRequestArgs::from_json(&a[1])), client_id)),
-                    _ => Err(ParseError::UnknownMethod(method)),
+                    "error" =>
+                        Ok(RequestError(try!(MethodError::from_json(&a[1])), client_id)),
+                    _ => Ok(RequestError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
                 }
             },
             _ => Err(ParseError::InvalidJsonType("RequestMethod".to_string())),
@@ -389,6 +542,7 @@ pub enum ResponseMethod {
     Contacts(GetResponseArgs, String),
     ContactUpdates(GetUpdatesResponseArgs, String),
     ContactsSet(SetResponseArgs, String),
+    ResponseError(MethodError, String),
 }
 
 impl ToJson for ResponseMethod {
@@ -401,6 +555,8 @@ impl ToJson for ResponseMethod {
                     vec!("contactUpdates".to_json(), args.to_json(), client_id.to_json()),
                 ContactsSet(ref args, ref client_id) =>
                     vec!("contactsSet".to_json(), args.to_json(), client_id.to_json()),
+                ResponseError(ref args, ref client_id) =>
+                    vec!("error".to_json(), args.to_json(), client_id.to_json()),
             }
         )
     }
@@ -422,7 +578,9 @@ impl FromJson for ResponseMethod {
                         Ok(ContactUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
                     "contactsSet" =>
                         Ok(ContactsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
-                    _ => Err(ParseError::UnknownMethod(method)),
+                    "error" =>
+                        Ok(ResponseError(try!(MethodError::from_json(&a[1])), client_id)),
+                    _ => Ok(ResponseError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
                 }
             },
             _ => Err(ParseError::InvalidJsonType("ResponseMethod".to_string())),
