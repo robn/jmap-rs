@@ -696,9 +696,9 @@ impl Contact {
 
     pub fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContact {
         let mut p = PartialContact::default();
+        p.id = Present(self.id.clone());
         for prop in properties.iter() {
             match prop.as_ref() {
-                "id"                => p.id =                  Present(self.id.clone()),
                 "isFlagged"         => p.is_flagged =          Present(self.is_flagged),
                 "avatar"            => p.avatar =              Present(self.avatar.clone()),
                 "prefix"            => p.prefix =              Present(self.prefix.clone()),
