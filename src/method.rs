@@ -379,6 +379,7 @@ pub enum MethodError {
     AccountNoContacts,
     AccountNoCalendars,
     UnsupportedSort,
+    InternalError(Presence<ErrorDescription>), // XXX not in spec
 }
 
 impl Error for MethodError {
@@ -403,6 +404,7 @@ impl Error for MethodError {
             MethodError::AccountNoContacts      => "account does not contain any contact data",
             MethodError::AccountNoCalendars     => "account does not contain any calendar data",
             MethodError::UnsupportedSort        => "unable to sort on requested properties",
+            MethodError::InternalError(_)       => "internal error",
         }
     }
 }
@@ -412,6 +414,7 @@ impl fmt::Display for MethodError {
         write!(f, "{}", match *self {
             MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
             MethodError::InvalidArguments(Present(ref d)) => format!("invalid arguments for method ({})", d.0),
+            MethodError::InternalError(Present(ref d)) => format!("internal error ({})", d.0),
             ref e => e.description().to_string(),
         })
     }
@@ -441,11 +444,16 @@ impl ToJson for MethodError {
             MethodError::AccountNoContacts      => "accountNoContacts",
             MethodError::AccountNoCalendars     => "accountNoCalendars",
             MethodError::UnsupportedSort        => "unsupportedSort",
+            MethodError::InternalError(_)       => "internalError",
         }.to_string().to_json_field(&mut d, "type");
 
-        if let MethodError::InvalidArguments(ref desc) = *self {
-            desc.to_json_field(&mut d, "description");
-        }
+        match *self {
+            MethodError::UnknownMethod(ref desc)    |
+            MethodError::InvalidArguments(ref desc) |
+            MethodError::InternalError(ref desc) =>
+                desc.to_json_field(&mut d, "description"),
+            _ => (),
+        };
 
         Json::Object(d)
     }
@@ -476,6 +484,8 @@ impl FromJson for MethodError {
                     "accountNoContacts"      => Ok(MethodError::AccountNoContacts),
                     "accountNoCalendars"     => Ok(MethodError::AccountNoCalendars),
                     "unsupportedSort"        => Ok(MethodError::UnsupportedSort),
+                    "internalError"          => Ok(MethodError::InternalError(try!(FromJsonField::from_json_field(o, "description")))),
+
                     _                        => Err(ParseError::InvalidStructure("MethodError".to_string())),
                 }
             },
