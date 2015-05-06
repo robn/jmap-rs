@@ -495,6 +495,11 @@ impl FromJson for MethodError {
 }
 
 
+pub trait ClientId {
+    fn client_id(&self) -> String;
+}
+
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum RequestMethod {
     GetContacts(GetRequestArgs, String),
@@ -543,6 +548,17 @@ impl FromJson for RequestMethod {
             },
             _ => Err(ParseError::InvalidJsonType("RequestMethod".to_string())),
         }
+    }
+}
+
+impl ClientId for RequestMethod {
+    fn client_id(&self) -> String {
+        match *self {
+            GetContacts(_, ref id)       => id,
+            GetContactUpdates(_, ref id) => id,
+            SetContacts(_, ref id)       => id,
+            RequestError(_, ref id)      => id,
+        }.clone()
     }
 }
 
@@ -595,6 +611,17 @@ impl FromJson for ResponseMethod {
             },
             _ => Err(ParseError::InvalidJsonType("ResponseMethod".to_string())),
         }
+    }
+}
+
+impl ClientId for ResponseMethod {
+    fn client_id(&self) -> String {
+        match *self {
+            Contacts(_, ref id)       => id,
+            ContactUpdates(_, ref id) => id,
+            ContactsSet(_, ref id)    => id,
+            ResponseError(_, ref id)  => id,
+        }.clone()
     }
 }
 
