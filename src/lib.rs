@@ -1,6 +1,6 @@
 extern crate rustc_serialize;
 
-pub mod util;
+pub mod parse;
+pub mod method;
 pub mod contact;
 pub mod contactgroup;
-pub mod method;

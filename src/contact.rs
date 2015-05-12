@@ -3,8 +3,8 @@ use std::string::ToString;
 use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
-use util::*;
-use util::Presence::*;
+use parse::*;
+use parse::Presence::*;
 
 // basic three-part Date type, YYYY-MM-DD
 // individual components may be 0, which will present as None

@@ -3,8 +3,8 @@ use std::string::ToString;
 use std::default::Default;
 use rustc_serialize::json::{Json,ToJson};
 
-use util::*;
-use util::Presence::*;
+use parse::*;
+use parse::Presence::*;
 
 
 #[derive(Clone, PartialEq, Debug)]

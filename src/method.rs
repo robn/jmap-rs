@@ -4,8 +4,8 @@ use std::error::Error;
 use std::fmt;
 use rustc_serialize::json::{Json,ToJson};
 
-use util::*;
-use util::Presence::*;
+use parse::*;
+use parse::Presence::*;
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
 use contact::PartialContact;
