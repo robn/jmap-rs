@@ -2,13 +2,13 @@
 
 A JMAP parser/generator in Rust
 
-## what is JMAP?
+## What is JMAP?
 
 JMAP is the JSON Mail Access Protocol, an API for accessing mail, calendars and
 contacts on a server. In simple terms its a HTTP+JSON replacement for IMAP,
 CalDAV and CardDAV. See [jmap.io](http://jmap.io/) for more info.
 
-## what is jmap-rs?
+## What is jmap-rs?
 
 Everything you need to parse, generate and manipulate JMAP data structures from
 Rust. Its what you need if you're writing a JMAP server or client.
@@ -16,18 +16,20 @@ Rust. Its what you need if you're writing a JMAP server or client.
 (salada)[https://github.com/robn/salada] is a JMAP server that uses this
 library.
 
-## status
+## Status
 
-So far it can round-trip a JMAP Contact object and its related methods into the
-corresponding Rust structures and back. Most of my efforts so far are in
-learning the language and type system and getting a good set of tools and
-idioms established for building out the entire protocol.
+Support for round-tripping JMAP Contacts and Contact Groups and related methods
+into the corresponding Rust structures and back. More is being added as
+required by client projects (notably salada).
 
-## credits and license
+## Credits and license
 
 Copyright (c) 2015 Robert Norris. MIT license. See LICENSE.
 
-## contributing
+## Contributing
 
-Please hack on this and send pull requests :)
+Pull requests are very welcome! For more general discussions about jmap-rs or
+JMAP, try the
+[jmap-discuss](https://groups.google.com/forum/#!forum/jmap-discuss) mailing
+list or [#jmap on Freenode IRC](http://webchat.freenode.net/?channels=pioneer).
 
