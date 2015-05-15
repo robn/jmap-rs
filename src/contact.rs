@@ -5,6 +5,8 @@ use rustc_serialize::json::{Json,ToJson};
 
 use parse::*;
 use parse::Presence::*;
+use record::{Record, PartialRecord};
+
 
 // basic three-part Date type, YYYY-MM-DD
 // individual components may be 0, which will present as None
@@ -560,6 +562,8 @@ pub struct PartialContact {
     pub notes:               Presence<String>,
 }
 
+impl PartialRecord for PartialContact { }
+
 impl Default for PartialContact {
     fn default() -> PartialContact {
         PartialContact {
@@ -644,8 +648,10 @@ impl FromJson for PartialContact {
 }
 
 
-impl Contact {
-    pub fn updated_with(&self, p: &PartialContact) -> Contact {
+impl Record for Contact {
+    type Partial = PartialContact;
+
+    fn updated_with(&self, p: &PartialContact) -> Contact {
         let mut c = self.clone();
         let u = p.clone();
         if let Present(v) = u.id                  { c.id = v };
@@ -670,7 +676,7 @@ impl Contact {
         c
     }
 
-    pub fn to_partial(&self) -> PartialContact {
+    fn to_partial(&self) -> PartialContact {
         PartialContact {
             id:                  Present(self.id.clone()),
             is_flagged:          Present(self.is_flagged),
@@ -694,7 +700,7 @@ impl Contact {
         }
     }
 
-    pub fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContact {
+    fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContact {
         let mut p = PartialContact::default();
         p.id = Present(self.id.clone());
         for prop in properties.iter() {

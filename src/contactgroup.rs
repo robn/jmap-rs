@@ -5,6 +5,7 @@ use rustc_serialize::json::{Json,ToJson};
 
 use parse::*;
 use parse::Presence::*;
+use record::{Record, PartialRecord};
 
 
 #[derive(Clone, PartialEq, Debug)]
@@ -57,6 +58,8 @@ pub struct PartialContactGroup {
     pub contact_ids: Presence<Vec<String>>,
 }
 
+impl PartialRecord for PartialContactGroup { }
+
 impl Default for PartialContactGroup {
     fn default() -> PartialContactGroup {
         PartialContactGroup {
@@ -93,8 +96,10 @@ impl FromJson for PartialContactGroup {
 }
 
 
-impl ContactGroup {
-    pub fn updated_with(&self, p: &PartialContactGroup) -> ContactGroup {
+impl Record for ContactGroup {
+    type Partial = PartialContactGroup;
+
+    fn updated_with(&self, p: &PartialContactGroup) -> ContactGroup {
         let mut g = self.clone();
         let u = p.clone();
         if let Present(v) = u.id          { g.id = v };
@@ -103,7 +108,7 @@ impl ContactGroup {
         g
     }
 
-    pub fn to_partial(&self) -> PartialContactGroup {
+    fn to_partial(&self) -> PartialContactGroup {
         PartialContactGroup {
             id:          Present(self.id.clone()),
             name:        Present(self.name.clone()),
@@ -111,7 +116,7 @@ impl ContactGroup {
         }
     }
 
-    pub fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContactGroup {
+    fn to_filtered_partial(&self, properties: &Vec<String>) -> PartialContactGroup {
         let mut p = PartialContactGroup::default();
         p.id = Present(self.id.clone());
         for prop in properties.iter() {

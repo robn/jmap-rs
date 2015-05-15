@@ -1,33 +1,38 @@
 use std::collections::BTreeMap;
 use std::default::Default;
 use std::error::Error;
+use std::marker::PhantomData;
 use std::fmt;
 use rustc_serialize::json::{Json,ToJson};
 
 use parse::*;
 use parse::Presence::*;
+use record::Record;
+use contact::Contact;
+
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
-use contact::PartialContact;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct GetRequestArgs {
+pub struct GetRequestArgs<R> where R: Record {
     pub ids:         Presence<Vec<String>>,
     pub properties:  Presence<Vec<String>>,
     pub since_state: Presence<String>,
+    pub _marker:     PhantomData<R>,
 }
 
-impl Default for GetRequestArgs {
-    fn default() -> GetRequestArgs {
-        GetRequestArgs {
+impl<R: Record> Default for GetRequestArgs<R> {
+    fn default() -> GetRequestArgs<R> {
+        GetRequestArgs::<R> {
             ids:         Absent,
             properties:  Absent,
             since_state: Absent,
+            _marker:     PhantomData,
         }
     }
 }
 
-impl ToJson for GetRequestArgs {
+impl<R: Record> ToJson for GetRequestArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.ids.to_json_field(&mut d, "ids");
@@ -37,11 +42,11 @@ impl ToJson for GetRequestArgs {
     }
 }
 
-impl FromJson for GetRequestArgs {
-    fn from_json(json: &Json) -> Result<GetRequestArgs,ParseError> {
+impl<R: Record> FromJson for GetRequestArgs<R> {
+    fn from_json(json: &Json) -> Result<GetRequestArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = GetRequestArgs::default();
+                let mut args = GetRequestArgs::<R>::default();
                 args.ids         = try!(FromJsonField::from_json_field(o, "ids"));
                 args.properties  = try!(FromJsonField::from_json_field(o, "properties"));
                 args.since_state = try!(FromJsonField::from_json_field(o, "sinceState"));
@@ -54,15 +59,15 @@ impl FromJson for GetRequestArgs {
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct GetResponseArgs {
+pub struct GetResponseArgs<R> where R: Record {
     pub state:     String,
-    pub list:      Option<Vec<PartialContact>>,
+    pub list:      Option<Vec<R::Partial>>,
     pub not_found: Option<Vec<String>>,
 }
 
-impl Default for GetResponseArgs {
-    fn default() -> GetResponseArgs {
-        GetResponseArgs {
+impl<R: Record> Default for GetResponseArgs<R> {
+    fn default() -> GetResponseArgs<R> {
+        GetResponseArgs::<R> {
             state:     "".to_string(),
             list:      None,
             not_found: None,
@@ -70,7 +75,7 @@ impl Default for GetResponseArgs {
     }
 }
 
-impl ToJson for GetResponseArgs {
+impl<R: Record> ToJson for GetResponseArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.state.to_json_field(&mut d, "state");
@@ -80,11 +85,11 @@ impl ToJson for GetResponseArgs {
     }
 }
 
-impl FromJson for GetResponseArgs {
-    fn from_json(json: &Json) -> Result<GetResponseArgs,ParseError> {
+impl<R: Record> FromJson for GetResponseArgs<R> {
+    fn from_json(json: &Json) -> Result<GetResponseArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = GetResponseArgs::default();
+                let mut args = GetResponseArgs::<R>::default();
                 args.state       = try!(FromJsonField::from_json_field(o, "state"));
                 args.list        = try!(FromJsonField::from_json_field(o, "list"));
                 args.not_found   = try!(FromJsonField::from_json_field(o, "notFound"));
@@ -97,25 +102,27 @@ impl FromJson for GetResponseArgs {
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct GetUpdatesRequestArgs {
+pub struct GetUpdatesRequestArgs<R> where R: Record {
     pub since_state:             String,
     pub max_changes:             Presence<u64>,
     pub fetch_records:           Presence<bool>,
     pub fetch_record_properties: Presence<Vec<String>>,
+    pub _marker:                 PhantomData<R>,
 }
 
-impl Default for GetUpdatesRequestArgs {
-    fn default() -> GetUpdatesRequestArgs {
-        GetUpdatesRequestArgs {
+impl<R: Record> Default for GetUpdatesRequestArgs<R> {
+    fn default() -> GetUpdatesRequestArgs<R> {
+        GetUpdatesRequestArgs::<R> {
             since_state:             "".to_string(),
             max_changes:             Absent,
             fetch_records:           Absent,
             fetch_record_properties: Absent,
+            _marker:                 PhantomData,
         }
     }
 }
 
-impl ToJson for GetUpdatesRequestArgs {
+impl<R: Record> ToJson for GetUpdatesRequestArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.since_state.to_json_field(&mut d, "sinceState");
@@ -126,11 +133,11 @@ impl ToJson for GetUpdatesRequestArgs {
     }
 }
 
-impl FromJson for GetUpdatesRequestArgs {
-    fn from_json(json: &Json) -> Result<GetUpdatesRequestArgs,ParseError> {
+impl<R: Record> FromJson for GetUpdatesRequestArgs<R> {
+    fn from_json(json: &Json) -> Result<GetUpdatesRequestArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = GetUpdatesRequestArgs::default();
+                let mut args = GetUpdatesRequestArgs::<R>::default();
                 args.since_state             = try!(FromJsonField::from_json_field(o, "sinceState"));
                 args.max_changes             = try!(FromJsonField::from_json_field(o, "maxChanges"));
                 args.fetch_records           = try!(FromJsonField::from_json_field(o, "fetchRecords"));
@@ -144,25 +151,27 @@ impl FromJson for GetUpdatesRequestArgs {
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct GetUpdatesResponseArgs {
+pub struct GetUpdatesResponseArgs<R> where R: Record {
     pub old_state: String,
     pub new_state: String,
     pub changed:   Vec<String>,
     pub removed:   Vec<String>,
+    pub _marker:   PhantomData<R>,
 }
 
-impl Default for GetUpdatesResponseArgs {
-    fn default() -> GetUpdatesResponseArgs {
-        GetUpdatesResponseArgs {
+impl<R: Record> Default for GetUpdatesResponseArgs<R> {
+    fn default() -> GetUpdatesResponseArgs<R> {
+        GetUpdatesResponseArgs::<R> {
             old_state: "".to_string(),
             new_state: "".to_string(),
             changed:   vec!(),
             removed:   vec!(),
+            _marker:   PhantomData,
         }
     }
 }
 
-impl ToJson for GetUpdatesResponseArgs {
+impl<R: Record> ToJson for GetUpdatesResponseArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.old_state.to_json_field(&mut d, "oldState");
@@ -173,11 +182,11 @@ impl ToJson for GetUpdatesResponseArgs {
     }
 }
 
-impl FromJson for GetUpdatesResponseArgs {
-    fn from_json(json: &Json) -> Result<GetUpdatesResponseArgs,ParseError> {
+impl<R: Record> FromJson for GetUpdatesResponseArgs<R> {
+    fn from_json(json: &Json) -> Result<GetUpdatesResponseArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = GetUpdatesResponseArgs::default();
+                let mut args = GetUpdatesResponseArgs::<R>::default();
                 args.old_state = try!(FromJsonField::from_json_field(o, "oldState"));
                 args.new_state = try!(FromJsonField::from_json_field(o, "newState"));
                 args.changed   = try!(FromJsonField::from_json_field(o, "changed"));
@@ -191,15 +200,15 @@ impl FromJson for GetUpdatesResponseArgs {
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct SetRequestArgs {
+pub struct SetRequestArgs<R> where R: Record {
     pub if_in_state: Presence<String>,
-    pub create:      Presence<BTreeMap<String,PartialContact>>,
-    pub update:      Presence<BTreeMap<String,PartialContact>>,
+    pub create:      Presence<BTreeMap<String,R::Partial>>,
+    pub update:      Presence<BTreeMap<String,R::Partial>>,
     pub destroy:     Presence<Vec<String>>,
 }
 
-impl Default for SetRequestArgs {
-    fn default() -> SetRequestArgs {
+impl<R: Record> Default for SetRequestArgs<R> {
+    fn default() -> SetRequestArgs<R> {
         SetRequestArgs {
             if_in_state: Absent,
             create:      Absent,
@@ -209,7 +218,7 @@ impl Default for SetRequestArgs {
     }
 }
 
-impl ToJson for SetRequestArgs {
+impl<R: Record> ToJson for SetRequestArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.if_in_state.to_json_field(&mut d, "ifInState");
@@ -220,11 +229,11 @@ impl ToJson for SetRequestArgs {
     }
 }
 
-impl FromJson for SetRequestArgs {
-    fn from_json(json: &Json) -> Result<SetRequestArgs,ParseError> {
+impl<R: Record> FromJson for SetRequestArgs<R> {
+    fn from_json(json: &Json) -> Result<SetRequestArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = SetRequestArgs::default();
+                let mut args = SetRequestArgs::<R>::default();
                 args.if_in_state = try!(FromJsonField::from_json_field(o, "ifInState"));
                 args.create      = try!(FromJsonField::from_json_field(o, "create"));
                 args.update      = try!(FromJsonField::from_json_field(o, "update"));
@@ -238,10 +247,10 @@ impl FromJson for SetRequestArgs {
 
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct SetResponseArgs {
+pub struct SetResponseArgs<R> where R: Record {
     pub old_state:     Option<String>,
     pub new_state:     String,
-    pub created:       BTreeMap<String,PartialContact>,
+    pub created:       BTreeMap<String,R::Partial>,
     pub updated:       Vec<String>,
     pub destroyed:     Vec<String>,
     pub not_created:   BTreeMap<String,SetError>,
@@ -249,9 +258,9 @@ pub struct SetResponseArgs {
     pub not_destroyed: BTreeMap<String,SetError>,
 }
 
-impl Default for SetResponseArgs {
-    fn default() -> SetResponseArgs {
-        SetResponseArgs {
+impl<R: Record> Default for SetResponseArgs<R> {
+    fn default() -> SetResponseArgs<R> {
+        SetResponseArgs::<R> {
             old_state:     None,
             new_state:     "".to_string(),
             created:       BTreeMap::new(),
@@ -264,7 +273,7 @@ impl Default for SetResponseArgs {
     }
 }
 
-impl ToJson for SetResponseArgs {
+impl<R: Record> ToJson for SetResponseArgs<R> {
     fn to_json(&self) -> Json {
         let mut d = BTreeMap::<String,Json>::new();
         self.old_state.to_json_field(&mut d, "oldState");
@@ -279,11 +288,11 @@ impl ToJson for SetResponseArgs {
     }
 }
 
-impl FromJson for SetResponseArgs {
-    fn from_json(json: &Json) -> Result<SetResponseArgs,ParseError> {
+impl<R: Record> FromJson for SetResponseArgs<R> {
+    fn from_json(json: &Json) -> Result<SetResponseArgs<R>,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let mut args = SetResponseArgs::default();
+                let mut args = SetResponseArgs::<R>::default();
                 args.old_state     = try!(FromJsonField::from_json_field(o, "oldState"));
                 args.new_state     = try!(FromJsonField::from_json_field(o, "newState"));
                 args.created       = try!(FromJsonField::from_json_field(o, "created"));
@@ -502,9 +511,9 @@ pub trait ClientId {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RequestMethod {
-    GetContacts(GetRequestArgs, String),
-    GetContactUpdates(GetUpdatesRequestArgs, String),
-    SetContacts(SetRequestArgs, String),
+    GetContacts(GetRequestArgs<Contact>, String),
+    GetContactUpdates(GetUpdatesRequestArgs<Contact>, String),
+    SetContacts(SetRequestArgs<Contact>, String),
     RequestError(MethodError, String),
 }
 
@@ -565,9 +574,9 @@ impl ClientId for RequestMethod {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ResponseMethod {
-    Contacts(GetResponseArgs, String),
-    ContactUpdates(GetUpdatesResponseArgs, String),
-    ContactsSet(SetResponseArgs, String),
+    Contacts(GetResponseArgs<Contact>, String),
+    ContactUpdates(GetUpdatesResponseArgs<Contact>, String),
+    ContactsSet(SetResponseArgs<Contact>, String),
     ResponseError(MethodError, String),
 }
 
