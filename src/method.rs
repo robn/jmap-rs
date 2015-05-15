@@ -8,7 +8,9 @@ use rustc_serialize::json::{Json,ToJson};
 use parse::*;
 use parse::Presence::*;
 use record::Record;
+
 use contact::Contact;
+use contactgroup::ContactGroup;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -514,6 +516,11 @@ pub enum RequestMethod {
     GetContacts(GetRequestArgs<Contact>, String),
     GetContactUpdates(GetUpdatesRequestArgs<Contact>, String),
     SetContacts(SetRequestArgs<Contact>, String),
+
+    GetContactGroups(GetRequestArgs<ContactGroup>, String),
+    GetContactGroupUpdates(GetUpdatesRequestArgs<ContactGroup>, String),
+    SetContactGroups(SetRequestArgs<ContactGroup>, String),
+
     RequestError(MethodError, String),
 }
 
@@ -527,6 +534,14 @@ impl ToJson for RequestMethod {
                     vec!("getContactUpdates".to_json(), args.to_json(), client_id.to_json()),
                 SetContacts(ref args, ref client_id) =>
                     vec!("setContacts".to_json(), args.to_json(), client_id.to_json()),
+
+                GetContactGroups(ref args, ref client_id) =>
+                    vec!("getContactGroups".to_json(), args.to_json(), client_id.to_json()),
+                GetContactGroupUpdates(ref args, ref client_id) =>
+                    vec!("getContactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
+                SetContactGroups(ref args, ref client_id) =>
+                    vec!("setContactGroups".to_json(), args.to_json(), client_id.to_json()),
+
                 RequestError(ref args, ref client_id) =>
                     vec!("error".to_json(), args.to_json(), client_id.to_json()),
             }
@@ -550,6 +565,14 @@ impl FromJson for RequestMethod {
                         Ok(GetContactUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
                     "setContacts" =>
                         Ok(SetContacts(try!(SetRequestArgs::from_json(&a[1])), client_id)),
+
+                    "getContactGroups" =>
+                        Ok(GetContactGroups(try!(GetRequestArgs::from_json(&a[1])), client_id)),
+                    "getContactGroupUpdates" =>
+                        Ok(GetContactGroupUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
+                    "setContactGroups" =>
+                        Ok(SetContactGroups(try!(SetRequestArgs::from_json(&a[1])), client_id)),
+
                     "error" =>
                         Ok(RequestError(try!(MethodError::from_json(&a[1])), client_id)),
                     _ => Ok(RequestError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
@@ -566,6 +589,11 @@ impl ClientId for RequestMethod {
             GetContacts(_, ref id)       => id,
             GetContactUpdates(_, ref id) => id,
             SetContacts(_, ref id)       => id,
+
+            GetContactGroups(_, ref id)       => id,
+            GetContactGroupUpdates(_, ref id) => id,
+            SetContactGroups(_, ref id)       => id,
+
             RequestError(_, ref id)      => id,
         }.clone()
     }
@@ -577,6 +605,11 @@ pub enum ResponseMethod {
     Contacts(GetResponseArgs<Contact>, String),
     ContactUpdates(GetUpdatesResponseArgs<Contact>, String),
     ContactsSet(SetResponseArgs<Contact>, String),
+
+    ContactGroups(GetResponseArgs<ContactGroup>, String),
+    ContactGroupUpdates(GetUpdatesResponseArgs<ContactGroup>, String),
+    ContactGroupsSet(SetResponseArgs<ContactGroup>, String),
+
     ResponseError(MethodError, String),
 }
 
@@ -590,6 +623,14 @@ impl ToJson for ResponseMethod {
                     vec!("contactUpdates".to_json(), args.to_json(), client_id.to_json()),
                 ContactsSet(ref args, ref client_id) =>
                     vec!("contactsSet".to_json(), args.to_json(), client_id.to_json()),
+
+                ContactGroups(ref args, ref client_id) =>
+                    vec!("contactGroups".to_json(), args.to_json(), client_id.to_json()),
+                ContactGroupUpdates(ref args, ref client_id) =>
+                    vec!("contactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
+                ContactGroupsSet(ref args, ref client_id) =>
+                    vec!("contactGroupsSet".to_json(), args.to_json(), client_id.to_json()),
+
                 ResponseError(ref args, ref client_id) =>
                     vec!("error".to_json(), args.to_json(), client_id.to_json()),
             }
@@ -613,6 +654,14 @@ impl FromJson for ResponseMethod {
                         Ok(ContactUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
                     "contactsSet" =>
                         Ok(ContactsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
+
+                    "contactGroups" =>
+                        Ok(ContactGroups(try!(GetResponseArgs::from_json(&a[1])), client_id)),
+                    "contactGroupUpdates" =>
+                        Ok(ContactGroupUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
+                    "contactGroupsSet" =>
+                        Ok(ContactGroupsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
+
                     "error" =>
                         Ok(ResponseError(try!(MethodError::from_json(&a[1])), client_id)),
                     _ => Ok(ResponseError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
@@ -629,6 +678,11 @@ impl ClientId for ResponseMethod {
             Contacts(_, ref id)       => id,
             ContactUpdates(_, ref id) => id,
             ContactsSet(_, ref id)    => id,
+
+            ContactGroups(_, ref id)       => id,
+            ContactGroupUpdates(_, ref id) => id,
+            ContactGroupsSet(_, ref id)    => id,
+
             ResponseError(_, ref id)  => id,
         }.clone()
     }
