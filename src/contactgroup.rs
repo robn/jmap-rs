@@ -58,7 +58,9 @@ pub struct PartialContactGroup {
     pub contact_ids: Presence<Vec<String>>,
 }
 
-impl PartialRecord for PartialContactGroup { }
+impl PartialRecord for PartialContactGroup {
+    partial_record_methods!();
+}
 
 impl Default for PartialContactGroup {
     fn default() -> PartialContactGroup {
@@ -98,6 +100,8 @@ impl FromJson for PartialContactGroup {
 
 impl Record for ContactGroup {
     type Partial = PartialContactGroup;
+
+    record_methods!();
 
     fn updated_with(&self, p: &PartialContactGroup) -> ContactGroup {
         let mut g = self.clone();

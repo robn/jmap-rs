@@ -562,7 +562,9 @@ pub struct PartialContact {
     pub notes:               Presence<String>,
 }
 
-impl PartialRecord for PartialContact { }
+impl PartialRecord for PartialContact {
+    partial_record_methods!();
+}
 
 impl Default for PartialContact {
     fn default() -> PartialContact {
@@ -650,6 +652,8 @@ impl FromJson for PartialContact {
 
 impl Record for Contact {
     type Partial = PartialContact;
+
+    record_methods!();
 
     fn updated_with(&self, p: &PartialContact) -> Contact {
         let mut c = self.clone();
