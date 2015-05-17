@@ -5,6 +5,7 @@ use rustc_serialize::json::{Json,ToJson};
 
 use parse::*;
 use parse::Presence::*;
+use record;
 use record::{Record, PartialRecord};
 
 
@@ -18,7 +19,7 @@ pub struct ContactGroup {
 impl Default for ContactGroup {
     fn default() -> ContactGroup {
         ContactGroup {
-            id:          "".to_string(),
+            id:          record::new_id(),
             name:        "".to_string(),
             contact_ids: vec!(),
         }
