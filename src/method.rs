@@ -9,6 +9,7 @@ use parse::*;
 use parse::Presence::*;
 use record::Record;
 
+use calendar::Calendar;
 use contact::Contact;
 use contactgroup::ContactGroup;
 
@@ -513,6 +514,10 @@ pub trait ClientId {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum RequestMethod {
+    GetCalendars(GetRequestArgs<Calendar>, String),
+    GetCalendarUpdates(GetUpdatesRequestArgs<Calendar>, String),
+    SetCalendars(SetRequestArgs<Calendar>, String),
+
     GetContacts(GetRequestArgs<Contact>, String),
     GetContactUpdates(GetUpdatesRequestArgs<Contact>, String),
     SetContacts(SetRequestArgs<Contact>, String),
@@ -528,6 +533,13 @@ impl ToJson for RequestMethod {
     fn to_json(&self) -> Json {
         Json::Array(
             match *self {
+                GetCalendars(ref args, ref client_id) =>
+                    vec!("getCalendars".to_json(), args.to_json(), client_id.to_json()),
+                GetCalendarUpdates(ref args, ref client_id) =>
+                    vec!("getCalendarUpdates".to_json(), args.to_json(), client_id.to_json()),
+                SetCalendars(ref args, ref client_id) =>
+                    vec!("setCalendars".to_json(), args.to_json(), client_id.to_json()),
+
                 GetContacts(ref args, ref client_id) =>
                     vec!("getContacts".to_json(), args.to_json(), client_id.to_json()),
                 GetContactUpdates(ref args, ref client_id) =>
@@ -559,6 +571,13 @@ impl FromJson for RequestMethod {
                 let method = try!(String::from_json(&a[0]));
                 let client_id = try!(String::from_json(&a[2]));
                 match method.as_ref() {
+                    "getCalendars" =>
+                        Ok(GetCalendars(try!(GetRequestArgs::from_json(&a[1])), client_id)),
+                    "getCalendarUpdates" =>
+                        Ok(GetCalendarUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
+                    "setCalendars" =>
+                        Ok(SetCalendars(try!(SetRequestArgs::from_json(&a[1])), client_id)),
+
                     "getContacts" =>
                         Ok(GetContacts(try!(GetRequestArgs::from_json(&a[1])), client_id)),
                     "getContactUpdates" =>
@@ -586,6 +605,10 @@ impl FromJson for RequestMethod {
 impl ClientId for RequestMethod {
     fn client_id(&self) -> String {
         match *self {
+            GetCalendars(_, ref id)       => id,
+            GetCalendarUpdates(_, ref id) => id,
+            SetCalendars(_, ref id)       => id,
+
             GetContacts(_, ref id)       => id,
             GetContactUpdates(_, ref id) => id,
             SetContacts(_, ref id)       => id,
@@ -602,6 +625,10 @@ impl ClientId for RequestMethod {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum ResponseMethod {
+    Calendars(GetResponseArgs<Calendar>, String),
+    CalendarUpdates(GetUpdatesResponseArgs<Calendar>, String),
+    CalendarsSet(SetResponseArgs<Calendar>, String),
+
     Contacts(GetResponseArgs<Contact>, String),
     ContactUpdates(GetUpdatesResponseArgs<Contact>, String),
     ContactsSet(SetResponseArgs<Contact>, String),
@@ -617,6 +644,13 @@ impl ToJson for ResponseMethod {
     fn to_json(&self) -> Json {
         Json::Array(
             match *self {
+                Calendars(ref args, ref client_id) =>
+                    vec!("calendars".to_json(), args.to_json(), client_id.to_json()),
+                CalendarUpdates(ref args, ref client_id) =>
+                    vec!("calendarUpdates".to_json(), args.to_json(), client_id.to_json()),
+                CalendarsSet(ref args, ref client_id) =>
+                    vec!("calendarsSet".to_json(), args.to_json(), client_id.to_json()),
+
                 Contacts(ref args, ref client_id) =>
                     vec!("contacts".to_json(), args.to_json(), client_id.to_json()),
                 ContactUpdates(ref args, ref client_id) =>
@@ -648,6 +682,13 @@ impl FromJson for ResponseMethod {
                 let method = try!(String::from_json(&a[0]));
                 let client_id = try!(String::from_json(&a[2]));
                 match method.as_ref() {
+                    "calendars" =>
+                        Ok(Calendars(try!(GetResponseArgs::from_json(&a[1])), client_id)),
+                    "calendarUpdates" =>
+                        Ok(CalendarUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
+                    "calendarsSet" =>
+                        Ok(CalendarsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
+
                     "contacts" =>
                         Ok(Contacts(try!(GetResponseArgs::from_json(&a[1])), client_id)),
                     "contactUpdates" =>
@@ -675,6 +716,10 @@ impl FromJson for ResponseMethod {
 impl ClientId for ResponseMethod {
     fn client_id(&self) -> String {
         match *self {
+            Calendars(_, ref id)       => id,
+            CalendarUpdates(_, ref id) => id,
+            CalendarsSet(_, ref id)    => id,
+
             Contacts(_, ref id)       => id,
             ContactUpdates(_, ref id) => id,
             ContactsSet(_, ref id)    => id,
