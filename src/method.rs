@@ -12,6 +12,7 @@ use record::Record;
 use calendar::Calendar;
 use contact::Contact;
 use contactgroup::ContactGroup;
+use mailbox::Mailbox;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -526,6 +527,10 @@ pub enum RequestMethod {
     GetContactGroupUpdates(GetUpdatesRequestArgs<ContactGroup>, String),
     SetContactGroups(SetRequestArgs<ContactGroup>, String),
 
+    GetMailboxes(GetRequestArgs<Mailbox>, String),
+    GetMailboxUpdates(GetUpdatesRequestArgs<Mailbox>, String),
+    SetMailboxes(SetRequestArgs<Mailbox>, String),
+
     RequestError(MethodError, String),
 }
 
@@ -553,6 +558,13 @@ impl ToJson for RequestMethod {
                     vec!("getContactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
                 SetContactGroups(ref args, ref client_id) =>
                     vec!("setContactGroups".to_json(), args.to_json(), client_id.to_json()),
+
+                GetMailboxes(ref args, ref client_id) =>
+                    vec!("getMailboxes".to_json(), args.to_json(), client_id.to_json()),
+                GetMailboxUpdates(ref args, ref client_id) =>
+                    vec!("getMailboxUpdates".to_json(), args.to_json(), client_id.to_json()),
+                SetMailboxes(ref args, ref client_id) =>
+                    vec!("setMailboxes".to_json(), args.to_json(), client_id.to_json()),
 
                 RequestError(ref args, ref client_id) =>
                     vec!("error".to_json(), args.to_json(), client_id.to_json()),
@@ -592,6 +604,13 @@ impl FromJson for RequestMethod {
                     "setContactGroups" =>
                         Ok(SetContactGroups(try!(SetRequestArgs::from_json(&a[1])), client_id)),
 
+                    "getMailboxes" =>
+                        Ok(GetMailboxes(try!(GetRequestArgs::from_json(&a[1])), client_id)),
+                    "getMailboxUpdates" =>
+                        Ok(GetMailboxUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
+                    "setMailboxes" =>
+                        Ok(SetMailboxes(try!(SetRequestArgs::from_json(&a[1])), client_id)),
+
                     "error" =>
                         Ok(RequestError(try!(MethodError::from_json(&a[1])), client_id)),
                     _ => Ok(RequestError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
@@ -617,6 +636,10 @@ impl ClientId for RequestMethod {
             GetContactGroupUpdates(_, ref id) => id,
             SetContactGroups(_, ref id)       => id,
 
+            GetMailboxes(_, ref id)       => id,
+            GetMailboxUpdates(_, ref id) => id,
+            SetMailboxes(_, ref id)       => id,
+
             RequestError(_, ref id)      => id,
         }.clone()
     }
@@ -636,6 +659,10 @@ pub enum ResponseMethod {
     ContactGroups(GetResponseArgs<ContactGroup>, String),
     ContactGroupUpdates(GetUpdatesResponseArgs<ContactGroup>, String),
     ContactGroupsSet(SetResponseArgs<ContactGroup>, String),
+
+    Mailboxes(GetResponseArgs<Mailbox>, String),
+    MailboxUpdates(GetUpdatesResponseArgs<Mailbox>, String),
+    MailboxesSet(SetResponseArgs<Mailbox>, String),
 
     ResponseError(MethodError, String),
 }
@@ -664,6 +691,13 @@ impl ToJson for ResponseMethod {
                     vec!("contactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
                 ContactGroupsSet(ref args, ref client_id) =>
                     vec!("contactGroupsSet".to_json(), args.to_json(), client_id.to_json()),
+
+                Mailboxes(ref args, ref client_id) =>
+                    vec!("mailboxes".to_json(), args.to_json(), client_id.to_json()),
+                MailboxUpdates(ref args, ref client_id) =>
+                    vec!("mailboxUpdates".to_json(), args.to_json(), client_id.to_json()),
+                MailboxesSet(ref args, ref client_id) =>
+                    vec!("mailboxesSet".to_json(), args.to_json(), client_id.to_json()),
 
                 ResponseError(ref args, ref client_id) =>
                     vec!("error".to_json(), args.to_json(), client_id.to_json()),
@@ -703,6 +737,13 @@ impl FromJson for ResponseMethod {
                     "contactGroupsSet" =>
                         Ok(ContactGroupsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
 
+                    "mailboxes" =>
+                        Ok(Mailboxes(try!(GetResponseArgs::from_json(&a[1])), client_id)),
+                    "mailboxUpdates" =>
+                        Ok(MailboxUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
+                    "mailboxesSet" =>
+                        Ok(MailboxesSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
+
                     "error" =>
                         Ok(ResponseError(try!(MethodError::from_json(&a[1])), client_id)),
                     _ => Ok(ResponseError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
@@ -727,6 +768,10 @@ impl ClientId for ResponseMethod {
             ContactGroups(_, ref id)       => id,
             ContactGroupUpdates(_, ref id) => id,
             ContactGroupsSet(_, ref id)    => id,
+
+            Mailboxes(_, ref id)       => id,
+            MailboxUpdates(_, ref id) => id,
+            MailboxesSet(_, ref id)    => id,
 
             ResponseError(_, ref id)  => id,
         }.clone()
