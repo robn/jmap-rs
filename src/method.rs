@@ -513,317 +513,121 @@ pub trait ClientId {
 }
 
 
-#[derive(Clone, PartialEq, Debug)]
-pub enum RequestMethod {
-    GetCalendars(GetRequestArgs<Calendar>, String),
-    GetCalendarUpdates(GetUpdatesRequestArgs<Calendar>, String),
-    SetCalendars(SetRequestArgs<Calendar>, String),
+macro_rules! make_methods {
+    ($set: ident, $setname: expr, $error: ident, $($method: ident, $args: ty => $methodname: expr),*) => {
+        #[derive(Clone, PartialEq, Debug)]
+        pub enum $set {
+            $($method($args, String),)*
+        }
 
-    GetContacts(GetRequestArgs<Contact>, String),
-    GetContactUpdates(GetUpdatesRequestArgs<Contact>, String),
-    SetContacts(SetRequestArgs<Contact>, String),
-
-    GetContactGroups(GetRequestArgs<ContactGroup>, String),
-    GetContactGroupUpdates(GetUpdatesRequestArgs<ContactGroup>, String),
-    SetContactGroups(SetRequestArgs<ContactGroup>, String),
-
-    GetMailboxes(GetRequestArgs<Mailbox>, String),
-    GetMailboxUpdates(GetUpdatesRequestArgs<Mailbox>, String),
-    SetMailboxes(SetRequestArgs<Mailbox>, String),
-
-    RequestError(MethodError, String),
-}
-
-impl ToJson for RequestMethod {
-    fn to_json(&self) -> Json {
-        Json::Array(
-            match *self {
-                GetCalendars(ref args, ref client_id) =>
-                    vec!("getCalendars".to_json(), args.to_json(), client_id.to_json()),
-                GetCalendarUpdates(ref args, ref client_id) =>
-                    vec!("getCalendarUpdates".to_json(), args.to_json(), client_id.to_json()),
-                SetCalendars(ref args, ref client_id) =>
-                    vec!("setCalendars".to_json(), args.to_json(), client_id.to_json()),
-
-                GetContacts(ref args, ref client_id) =>
-                    vec!("getContacts".to_json(), args.to_json(), client_id.to_json()),
-                GetContactUpdates(ref args, ref client_id) =>
-                    vec!("getContactUpdates".to_json(), args.to_json(), client_id.to_json()),
-                SetContacts(ref args, ref client_id) =>
-                    vec!("setContacts".to_json(), args.to_json(), client_id.to_json()),
-
-                GetContactGroups(ref args, ref client_id) =>
-                    vec!("getContactGroups".to_json(), args.to_json(), client_id.to_json()),
-                GetContactGroupUpdates(ref args, ref client_id) =>
-                    vec!("getContactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
-                SetContactGroups(ref args, ref client_id) =>
-                    vec!("setContactGroups".to_json(), args.to_json(), client_id.to_json()),
-
-                GetMailboxes(ref args, ref client_id) =>
-                    vec!("getMailboxes".to_json(), args.to_json(), client_id.to_json()),
-                GetMailboxUpdates(ref args, ref client_id) =>
-                    vec!("getMailboxUpdates".to_json(), args.to_json(), client_id.to_json()),
-                SetMailboxes(ref args, ref client_id) =>
-                    vec!("setMailboxes".to_json(), args.to_json(), client_id.to_json()),
-
-                RequestError(ref args, ref client_id) =>
-                    vec!("error".to_json(), args.to_json(), client_id.to_json()),
+        impl ToJson for $set {
+            fn to_json(&self) -> Json {
+                Json::Array(
+                    match *self {
+                        $($method(ref args, ref client_id) =>
+                            vec!($methodname.to_json(), args.to_json(), client_id.to_json()),)*
+                    }
+                )
             }
-        )
-    }
-}
-
-impl FromJson for RequestMethod {
-    fn from_json(json: &Json) -> Result<RequestMethod,ParseError> {
-        match *json {
-            Json::Array(ref a) => {
-                if let false = a.len() == 3 {
-                    return Err(ParseError::InvalidStructure("RequestMethod".to_string()));
-                }
-                let method = try!(String::from_json(&a[0]));
-                let client_id = try!(String::from_json(&a[2]));
-                match method.as_ref() {
-                    "getCalendars" =>
-                        Ok(GetCalendars(try!(GetRequestArgs::from_json(&a[1])), client_id)),
-                    "getCalendarUpdates" =>
-                        Ok(GetCalendarUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
-                    "setCalendars" =>
-                        Ok(SetCalendars(try!(SetRequestArgs::from_json(&a[1])), client_id)),
-
-                    "getContacts" =>
-                        Ok(GetContacts(try!(GetRequestArgs::from_json(&a[1])), client_id)),
-                    "getContactUpdates" =>
-                        Ok(GetContactUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
-                    "setContacts" =>
-                        Ok(SetContacts(try!(SetRequestArgs::from_json(&a[1])), client_id)),
-
-                    "getContactGroups" =>
-                        Ok(GetContactGroups(try!(GetRequestArgs::from_json(&a[1])), client_id)),
-                    "getContactGroupUpdates" =>
-                        Ok(GetContactGroupUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
-                    "setContactGroups" =>
-                        Ok(SetContactGroups(try!(SetRequestArgs::from_json(&a[1])), client_id)),
-
-                    "getMailboxes" =>
-                        Ok(GetMailboxes(try!(GetRequestArgs::from_json(&a[1])), client_id)),
-                    "getMailboxUpdates" =>
-                        Ok(GetMailboxUpdates(try!(GetUpdatesRequestArgs::from_json(&a[1])), client_id)),
-                    "setMailboxes" =>
-                        Ok(SetMailboxes(try!(SetRequestArgs::from_json(&a[1])), client_id)),
-
-                    "error" =>
-                        Ok(RequestError(try!(MethodError::from_json(&a[1])), client_id)),
-                    _ => Ok(RequestError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
-                }
-            },
-            _ => Err(ParseError::InvalidJsonType("RequestMethod".to_string())),
         }
-    }
-}
 
-impl ClientId for RequestMethod {
-    fn client_id(&self) -> String {
-        match *self {
-            GetCalendars(_, ref id)       => id,
-            GetCalendarUpdates(_, ref id) => id,
-            SetCalendars(_, ref id)       => id,
-
-            GetContacts(_, ref id)       => id,
-            GetContactUpdates(_, ref id) => id,
-            SetContacts(_, ref id)       => id,
-
-            GetContactGroups(_, ref id)       => id,
-            GetContactGroupUpdates(_, ref id) => id,
-            SetContactGroups(_, ref id)       => id,
-
-            GetMailboxes(_, ref id)       => id,
-            GetMailboxUpdates(_, ref id) => id,
-            SetMailboxes(_, ref id)       => id,
-
-            RequestError(_, ref id)      => id,
-        }.clone()
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub enum ResponseMethod {
-    Calendars(GetResponseArgs<Calendar>, String),
-    CalendarUpdates(GetUpdatesResponseArgs<Calendar>, String),
-    CalendarsSet(SetResponseArgs<Calendar>, String),
-
-    Contacts(GetResponseArgs<Contact>, String),
-    ContactUpdates(GetUpdatesResponseArgs<Contact>, String),
-    ContactsSet(SetResponseArgs<Contact>, String),
-
-    ContactGroups(GetResponseArgs<ContactGroup>, String),
-    ContactGroupUpdates(GetUpdatesResponseArgs<ContactGroup>, String),
-    ContactGroupsSet(SetResponseArgs<ContactGroup>, String),
-
-    Mailboxes(GetResponseArgs<Mailbox>, String),
-    MailboxUpdates(GetUpdatesResponseArgs<Mailbox>, String),
-    MailboxesSet(SetResponseArgs<Mailbox>, String),
-
-    ResponseError(MethodError, String),
-}
-
-impl ToJson for ResponseMethod {
-    fn to_json(&self) -> Json {
-        Json::Array(
-            match *self {
-                Calendars(ref args, ref client_id) =>
-                    vec!("calendars".to_json(), args.to_json(), client_id.to_json()),
-                CalendarUpdates(ref args, ref client_id) =>
-                    vec!("calendarUpdates".to_json(), args.to_json(), client_id.to_json()),
-                CalendarsSet(ref args, ref client_id) =>
-                    vec!("calendarsSet".to_json(), args.to_json(), client_id.to_json()),
-
-                Contacts(ref args, ref client_id) =>
-                    vec!("contacts".to_json(), args.to_json(), client_id.to_json()),
-                ContactUpdates(ref args, ref client_id) =>
-                    vec!("contactUpdates".to_json(), args.to_json(), client_id.to_json()),
-                ContactsSet(ref args, ref client_id) =>
-                    vec!("contactsSet".to_json(), args.to_json(), client_id.to_json()),
-
-                ContactGroups(ref args, ref client_id) =>
-                    vec!("contactGroups".to_json(), args.to_json(), client_id.to_json()),
-                ContactGroupUpdates(ref args, ref client_id) =>
-                    vec!("contactGroupUpdates".to_json(), args.to_json(), client_id.to_json()),
-                ContactGroupsSet(ref args, ref client_id) =>
-                    vec!("contactGroupsSet".to_json(), args.to_json(), client_id.to_json()),
-
-                Mailboxes(ref args, ref client_id) =>
-                    vec!("mailboxes".to_json(), args.to_json(), client_id.to_json()),
-                MailboxUpdates(ref args, ref client_id) =>
-                    vec!("mailboxUpdates".to_json(), args.to_json(), client_id.to_json()),
-                MailboxesSet(ref args, ref client_id) =>
-                    vec!("mailboxesSet".to_json(), args.to_json(), client_id.to_json()),
-
-                ResponseError(ref args, ref client_id) =>
-                    vec!("error".to_json(), args.to_json(), client_id.to_json()),
+        impl FromJson for $set {
+            fn from_json(json: &Json) -> Result<$set,ParseError> {
+                match *json {
+                    Json::Array(ref a) => {
+                        if let false = a.len() == 3 {
+                            return Err(ParseError::InvalidStructure($setname.to_string()));
+                        }
+                        let method = try!(String::from_json(&a[0]));
+                        let client_id = try!(String::from_json(&a[2]));
+                        match method.as_ref() {
+                            $($methodname => Ok($method(try!(<$args>::from_json(&a[1])), client_id)),)*
+                            _ => Ok($error(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
+                        }
+                    },
+                    _ => Err(ParseError::InvalidJsonType($setname.to_string())),
+                }
             }
-        )
+        }
+
+        impl ClientId for $set {
+            fn client_id(&self) -> String {
+                match *self {
+                    $($method(_, ref id) => id,)*
+                }.clone()
+            }
+        }
     }
 }
 
-impl FromJson for ResponseMethod {
-    fn from_json(json: &Json) -> Result<ResponseMethod,ParseError> {
-        match *json {
-            Json::Array(ref a) => {
-                if let false = a.len() == 3 {
-                    return Err(ParseError::InvalidStructure("ResponseMethod".to_string()));
+make_methods!(RequestMethod, "RequestMethod", RequestError,
+    GetCalendars,           GetRequestArgs<Calendar>            => "getCalendars",
+    GetCalendarUpdates,     GetUpdatesRequestArgs<Calendar>     => "getCalendarUpdates",
+    SetCalendars,           SetRequestArgs<Calendar>            => "setCalendars",
+
+    GetContacts,            GetRequestArgs<Contact>             => "getContacts",
+    GetContactUpdates,      GetUpdatesRequestArgs<Contact>      => "getContactUpdates",
+    SetContacts,            SetRequestArgs<Contact>             => "setContacts",
+
+    GetContactGroups,       GetRequestArgs<ContactGroup>        => "getContactGroups",
+    GetContactGroupUpdates, GetUpdatesRequestArgs<ContactGroup> => "getContactGroupUpdates",
+    SetContactGroups,       SetRequestArgs<ContactGroup>        => "setContactGroups",
+
+    GetMailboxes,           GetRequestArgs<Mailbox>             => "getMailboxes",
+    GetMailboxUpdates,      GetUpdatesRequestArgs<Mailbox>      => "getMailboxUpdates",
+    SetMailboxes,           SetRequestArgs<Mailbox>             => "setMailboxes",
+
+    RequestError,           MethodError                         => "error"
+);
+
+make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
+    Calendars,           GetResponseArgs<Calendar>           => "calendars",
+    CalendarUpdates,     GetUpdatesResponseArgs<Calendar>    => "calendarUpdates",
+    CalendarsSet,        SetResponseArgs<Calendar>           => "calendersSet",
+
+    Contacts,            GetResponseArgs<Contact>             => "contacts",
+    ContactUpdates,      GetUpdatesResponseArgs<Contact>      => "contactUpdates",
+    ContactsSet,         SetResponseArgs<Contact>             => "contactsSet",
+
+    ContactGroups,       GetResponseArgs<ContactGroup>        => "contactGroups",
+    ContactGroupUpdates, GetUpdatesResponseArgs<ContactGroup> => "contactGroupUpdates",
+    ContactGroupsSet,    SetResponseArgs<ContactGroup>        => "contactGroupsSet",
+
+    Mailboxes,           GetResponseArgs<Mailbox>             => "mailboxes",
+    MailboxUpdates,      GetUpdatesResponseArgs<Mailbox>      => "mailboxUpdates",
+    MailboxesSet,        SetResponseArgs<Mailbox>             => "mailboxesSet",
+
+    ResponseError,       MethodError                          => "error"
+);
+
+
+macro_rules! make_batch {
+    ($batch: ident, $method: ty) => {
+        #[derive(Clone, PartialEq, Debug)]
+        pub struct $batch(pub Vec<$method>);
+
+        impl Default for $batch {
+            fn default() -> $batch {
+                $batch(vec!())
+            }
+        }
+
+        impl ToJson for $batch {
+            fn to_json(&self) -> Json {
+                self.0.to_json()
+            }
+        }
+
+        impl FromJson for $batch {
+            fn from_json(json: &Json) -> Result<$batch,ParseError> {
+                match Vec::<$method>::from_json(json) {
+                    Ok(v) => Ok($batch(v)),
+                    Err(e) => Err(e),
                 }
-                let method = try!(String::from_json(&a[0]));
-                let client_id = try!(String::from_json(&a[2]));
-                match method.as_ref() {
-                    "calendars" =>
-                        Ok(Calendars(try!(GetResponseArgs::from_json(&a[1])), client_id)),
-                    "calendarUpdates" =>
-                        Ok(CalendarUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
-                    "calendarsSet" =>
-                        Ok(CalendarsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
-
-                    "contacts" =>
-                        Ok(Contacts(try!(GetResponseArgs::from_json(&a[1])), client_id)),
-                    "contactUpdates" =>
-                        Ok(ContactUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
-                    "contactsSet" =>
-                        Ok(ContactsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
-
-                    "contactGroups" =>
-                        Ok(ContactGroups(try!(GetResponseArgs::from_json(&a[1])), client_id)),
-                    "contactGroupUpdates" =>
-                        Ok(ContactGroupUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
-                    "contactGroupsSet" =>
-                        Ok(ContactGroupsSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
-
-                    "mailboxes" =>
-                        Ok(Mailboxes(try!(GetResponseArgs::from_json(&a[1])), client_id)),
-                    "mailboxUpdates" =>
-                        Ok(MailboxUpdates(try!(GetUpdatesResponseArgs::from_json(&a[1])), client_id)),
-                    "mailboxesSet" =>
-                        Ok(MailboxesSet(try!(SetResponseArgs::from_json(&a[1])), client_id)),
-
-                    "error" =>
-                        Ok(ResponseError(try!(MethodError::from_json(&a[1])), client_id)),
-                    _ => Ok(ResponseError(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
-                }
-            },
-            _ => Err(ParseError::InvalidJsonType("ResponseMethod".to_string())),
+            }
         }
     }
 }
 
-impl ClientId for ResponseMethod {
-    fn client_id(&self) -> String {
-        match *self {
-            Calendars(_, ref id)       => id,
-            CalendarUpdates(_, ref id) => id,
-            CalendarsSet(_, ref id)    => id,
-
-            Contacts(_, ref id)       => id,
-            ContactUpdates(_, ref id) => id,
-            ContactsSet(_, ref id)    => id,
-
-            ContactGroups(_, ref id)       => id,
-            ContactGroupUpdates(_, ref id) => id,
-            ContactGroupsSet(_, ref id)    => id,
-
-            Mailboxes(_, ref id)       => id,
-            MailboxUpdates(_, ref id) => id,
-            MailboxesSet(_, ref id)    => id,
-
-            ResponseError(_, ref id)  => id,
-        }.clone()
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct RequestBatch(pub Vec<RequestMethod>);
-
-impl Default for RequestBatch {
-    fn default() -> RequestBatch {
-        RequestBatch(vec!())
-    }
-}
-
-impl ToJson for RequestBatch {
-    fn to_json(&self) -> Json {
-        self.0.to_json()
-    }
-}
-
-impl FromJson for RequestBatch {
-    fn from_json(json: &Json) -> Result<RequestBatch,ParseError> {
-        match Vec::<RequestMethod>::from_json(json) {
-            Ok(v) => Ok(RequestBatch(v)),
-            Err(e) => Err(e),
-        }
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct ResponseBatch(pub Vec<ResponseMethod>);
-
-impl Default for ResponseBatch {
-    fn default() -> ResponseBatch {
-        ResponseBatch(vec!())
-    }
-}
-
-impl ToJson for ResponseBatch {
-    fn to_json(&self) -> Json {
-        self.0.to_json()
-    }
-}
-
-impl FromJson for ResponseBatch {
-    fn from_json(json: &Json) -> Result<ResponseBatch,ParseError> {
-        match Vec::<ResponseMethod>::from_json(json) {
-            Ok(v) => Ok(ResponseBatch(v)),
-            Err(e) => Err(e),
-        }
-    }
-}
+make_batch!(RequestBatch,  RequestMethod);
+make_batch!(ResponseBatch, ResponseMethod);
