@@ -17,300 +17,90 @@ use mailbox::Mailbox;
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct GetRequestArgs<R> where R: Record {
-    pub ids:         Presence<Vec<String>>,
-    pub properties:  Presence<Vec<String>>,
-    pub since_state: Presence<String>,
-    pub _marker:     PhantomData<R>,
-}
+macro_rules! make_method_args_type {
+    ($args: ident, $argsname: expr,
+     $($field: ident: $ty: ty => $prop: expr),*) => {
+        #[derive(Clone, PartialEq, Debug)]
+        pub struct $args<R> where R: Record {
+            pub _marker: PhantomData<R>,
+            $(pub $field: $ty),*
+        }
 
-impl<R: Record> Default for GetRequestArgs<R> {
-    fn default() -> GetRequestArgs<R> {
-        GetRequestArgs::<R> {
-            ids:         Absent,
-            properties:  Absent,
-            since_state: Absent,
-            _marker:     PhantomData,
+        impl<R: Record> Default for $args<R> {
+            fn default() -> $args<R> {
+                $args::<R> {
+                    _marker: PhantomData,
+                    ..Default::default()
+                }
+            }
+        }
+
+        impl<R: Record> ToJson for $args<R> {
+            fn to_json(&self) -> Json {
+                let mut d = BTreeMap::<String,Json>::new();
+                $(self.$field.to_json_field(&mut d, $prop);)*
+                Json::Object(d)
+            }
+        }
+
+        impl<R: Record> FromJson for $args<R> {
+            fn from_json(json: &Json) -> Result<$args<R>,ParseError> {
+                match *json {
+                    Json::Object(ref o) => {
+                        let mut args = <$args<R>>::default();
+                        $(args.$field = try!(FromJsonField::from_json_field(o, $prop));)*
+                        Ok(args)
+                    },
+                    _ => Err(ParseError::InvalidJsonType($argsname.to_string())),
+                }
+            }
         }
     }
 }
 
-impl<R: Record> ToJson for GetRequestArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.ids.to_json_field(&mut d, "ids");
-        self.properties.to_json_field(&mut d, "properties");
-        self.since_state.to_json_field(&mut d, "sinceState");
-        Json::Object(d)
-    }
-}
+make_method_args_type!(GetRequestArgs, "GetRequestArgs",
+    ids:         Presence<Vec<String>> => "ids",
+    properties:  Presence<Vec<String>> => "properties",
+    since_state: Presence<String>      => "sinceState"
+);
 
-impl<R: Record> FromJson for GetRequestArgs<R> {
-    fn from_json(json: &Json) -> Result<GetRequestArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = GetRequestArgs::<R>::default();
-                args.ids         = try!(FromJsonField::from_json_field(o, "ids"));
-                args.properties  = try!(FromJsonField::from_json_field(o, "properties"));
-                args.since_state = try!(FromJsonField::from_json_field(o, "sinceState"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("GetRequestArgs".to_string())),
-        }
-    }
-}
+make_method_args_type!(GetResponseArgs, "GetResponseArgs",
+    state:     String                  => "state",
+    list:      Option<Vec<R::Partial>> => "list",
+    not_found: Option<Vec<String>>     => "notFound"
+);
 
+make_method_args_type!(GetUpdatesRequestArgs, "GetUpdatesRequestArgs",
+    since_state:             String                => "sinceState",
+    max_changes:             Presence<u64>         => "maxChanges",
+    fetch_records:           Presence<bool>        => "fetchRecords",
+    fetch_record_properties: Presence<Vec<String>> => "fetchRecordProperties"
+);
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct GetResponseArgs<R> where R: Record {
-    pub state:     String,
-    pub list:      Option<Vec<R::Partial>>,
-    pub not_found: Option<Vec<String>>,
-}
+make_method_args_type!(GetUpdatesResponseArgs, "GetUpdatesResponseArgs",
+    old_state: String      => "oldState",
+    new_state: String      => "newState",
+    changed:   Vec<String> => "changed",
+    removed:   Vec<String> => "removed"
+);
 
-impl<R: Record> Default for GetResponseArgs<R> {
-    fn default() -> GetResponseArgs<R> {
-        GetResponseArgs::<R> {
-            state:     "".to_string(),
-            list:      None,
-            not_found: None,
-        }
-    }
-}
+make_method_args_type!(SetRequestArgs, "SetRequestArgs",
+    if_in_state: Presence<String>                      => "ifInState",
+    create:      Presence<BTreeMap<String,R::Partial>> => "create",
+    update:      Presence<BTreeMap<String,R::Partial>> => "update",
+    destroy:     Presence<Vec<String>>                 => "destroy"
+);
 
-impl<R: Record> ToJson for GetResponseArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.state.to_json_field(&mut d, "state");
-        self.list.to_json_field(&mut d, "list");
-        self.not_found.to_json_field(&mut d, "notFound");
-        Json::Object(d)
-    }
-}
-
-impl<R: Record> FromJson for GetResponseArgs<R> {
-    fn from_json(json: &Json) -> Result<GetResponseArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = GetResponseArgs::<R>::default();
-                args.state       = try!(FromJsonField::from_json_field(o, "state"));
-                args.list        = try!(FromJsonField::from_json_field(o, "list"));
-                args.not_found   = try!(FromJsonField::from_json_field(o, "notFound"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("GetResponseArgs".to_string())),
-        }
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct GetUpdatesRequestArgs<R> where R: Record {
-    pub since_state:             String,
-    pub max_changes:             Presence<u64>,
-    pub fetch_records:           Presence<bool>,
-    pub fetch_record_properties: Presence<Vec<String>>,
-    pub _marker:                 PhantomData<R>,
-}
-
-impl<R: Record> Default for GetUpdatesRequestArgs<R> {
-    fn default() -> GetUpdatesRequestArgs<R> {
-        GetUpdatesRequestArgs::<R> {
-            since_state:             "".to_string(),
-            max_changes:             Absent,
-            fetch_records:           Absent,
-            fetch_record_properties: Absent,
-            _marker:                 PhantomData,
-        }
-    }
-}
-
-impl<R: Record> ToJson for GetUpdatesRequestArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.since_state.to_json_field(&mut d, "sinceState");
-        self.max_changes.to_json_field(&mut d, "maxChanges");
-        self.fetch_records.to_json_field(&mut d, "fetchRecords");
-        self.fetch_record_properties.to_json_field(&mut d, "fetchRecordProperties");
-        Json::Object(d)
-    }
-}
-
-impl<R: Record> FromJson for GetUpdatesRequestArgs<R> {
-    fn from_json(json: &Json) -> Result<GetUpdatesRequestArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = GetUpdatesRequestArgs::<R>::default();
-                args.since_state             = try!(FromJsonField::from_json_field(o, "sinceState"));
-                args.max_changes             = try!(FromJsonField::from_json_field(o, "maxChanges"));
-                args.fetch_records           = try!(FromJsonField::from_json_field(o, "fetchRecords"));
-                args.fetch_record_properties = try!(FromJsonField::from_json_field(o, "fetchRecordProperties"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("GetUpdatesRequestArgs".to_string())),
-        }
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct GetUpdatesResponseArgs<R> where R: Record {
-    pub old_state: String,
-    pub new_state: String,
-    pub changed:   Vec<String>,
-    pub removed:   Vec<String>,
-    pub _marker:   PhantomData<R>,
-}
-
-impl<R: Record> Default for GetUpdatesResponseArgs<R> {
-    fn default() -> GetUpdatesResponseArgs<R> {
-        GetUpdatesResponseArgs::<R> {
-            old_state: "".to_string(),
-            new_state: "".to_string(),
-            changed:   vec!(),
-            removed:   vec!(),
-            _marker:   PhantomData,
-        }
-    }
-}
-
-impl<R: Record> ToJson for GetUpdatesResponseArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.old_state.to_json_field(&mut d, "oldState");
-        self.new_state.to_json_field(&mut d, "newState");
-        self.changed.to_json_field(&mut d, "changed");
-        self.removed.to_json_field(&mut d, "removed");
-        Json::Object(d)
-    }
-}
-
-impl<R: Record> FromJson for GetUpdatesResponseArgs<R> {
-    fn from_json(json: &Json) -> Result<GetUpdatesResponseArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = GetUpdatesResponseArgs::<R>::default();
-                args.old_state = try!(FromJsonField::from_json_field(o, "oldState"));
-                args.new_state = try!(FromJsonField::from_json_field(o, "newState"));
-                args.changed   = try!(FromJsonField::from_json_field(o, "changed"));
-                args.removed   = try!(FromJsonField::from_json_field(o, "removed"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("GetUpdatesResponseArgs".to_string())),
-        }
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct SetRequestArgs<R> where R: Record {
-    pub if_in_state: Presence<String>,
-    pub create:      Presence<BTreeMap<String,R::Partial>>,
-    pub update:      Presence<BTreeMap<String,R::Partial>>,
-    pub destroy:     Presence<Vec<String>>,
-}
-
-impl<R: Record> Default for SetRequestArgs<R> {
-    fn default() -> SetRequestArgs<R> {
-        SetRequestArgs {
-            if_in_state: Absent,
-            create:      Absent,
-            update:      Absent,
-            destroy:     Absent,
-        }
-    }
-}
-
-impl<R: Record> ToJson for SetRequestArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.if_in_state.to_json_field(&mut d, "ifInState");
-        self.create.to_json_field(&mut d, "create");
-        self.update.to_json_field(&mut d, "update");
-        self.destroy.to_json_field(&mut d, "destroy");
-        Json::Object(d)
-    }
-}
-
-impl<R: Record> FromJson for SetRequestArgs<R> {
-    fn from_json(json: &Json) -> Result<SetRequestArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = SetRequestArgs::<R>::default();
-                args.if_in_state = try!(FromJsonField::from_json_field(o, "ifInState"));
-                args.create      = try!(FromJsonField::from_json_field(o, "create"));
-                args.update      = try!(FromJsonField::from_json_field(o, "update"));
-                args.destroy     = try!(FromJsonField::from_json_field(o, "destroy"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("SetRequestArgs".to_string())),
-        }
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct SetResponseArgs<R> where R: Record {
-    pub old_state:     Option<String>,
-    pub new_state:     String,
-    pub created:       BTreeMap<String,R::Partial>,
-    pub updated:       Vec<String>,
-    pub destroyed:     Vec<String>,
-    pub not_created:   BTreeMap<String,SetError>,
-    pub not_updated:   BTreeMap<String,SetError>,
-    pub not_destroyed: BTreeMap<String,SetError>,
-}
-
-impl<R: Record> Default for SetResponseArgs<R> {
-    fn default() -> SetResponseArgs<R> {
-        SetResponseArgs::<R> {
-            old_state:     None,
-            new_state:     "".to_string(),
-            created:       BTreeMap::new(),
-            updated:       vec!(),
-            destroyed:     vec!(),
-            not_created:   BTreeMap::new(),
-            not_updated:   BTreeMap::new(),
-            not_destroyed: BTreeMap::new(),
-        }
-    }
-}
-
-impl<R: Record> ToJson for SetResponseArgs<R> {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.old_state.to_json_field(&mut d, "oldState");
-        self.new_state.to_json_field(&mut d, "newState");
-        self.created.to_json_field(&mut d, "created");
-        self.updated.to_json_field(&mut d, "updated");
-        self.destroyed.to_json_field(&mut d, "destroyed");
-        self.not_created.to_json_field(&mut d, "notCreated");
-        self.not_updated.to_json_field(&mut d, "notUpdated");
-        self.not_destroyed.to_json_field(&mut d, "notDestroyed");
-        Json::Object(d)
-    }
-}
-
-impl<R: Record> FromJson for SetResponseArgs<R> {
-    fn from_json(json: &Json) -> Result<SetResponseArgs<R>,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut args = SetResponseArgs::<R>::default();
-                args.old_state     = try!(FromJsonField::from_json_field(o, "oldState"));
-                args.new_state     = try!(FromJsonField::from_json_field(o, "newState"));
-                args.created       = try!(FromJsonField::from_json_field(o, "created"));
-                args.updated       = try!(FromJsonField::from_json_field(o, "updated"));
-                args.destroyed     = try!(FromJsonField::from_json_field(o, "destroyed"));
-                args.not_created   = try!(FromJsonField::from_json_field(o, "notCreated"));
-                args.not_updated   = try!(FromJsonField::from_json_field(o, "notUpdated"));
-                args.not_destroyed = try!(FromJsonField::from_json_field(o, "notDestroyed"));
-                Ok(args)
-            },
-            _ => Err(ParseError::InvalidJsonType("SetResponseArgs".to_string())),
-        }
-    }
-}
+make_method_args_type!(SetResponseArgs, "SetResponseArgs",
+    old_state:     Option<String>              => "oldState",
+    new_state:     String                      => "newState",
+    created:       BTreeMap<String,R::Partial> => "created",
+    updated:       Vec<String>                 => "updated",
+    destroyed:     Vec<String>                 => "destroyed",
+    not_created:   BTreeMap<String,SetError>   => "notCreated",
+    not_updated:   BTreeMap<String,SetError>   => "notUpdated",
+    not_destroyed: BTreeMap<String,SetError>   => "notDestroyed"
+);
 
 
 #[derive(Clone, PartialEq, Debug)]
