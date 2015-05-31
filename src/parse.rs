@@ -201,7 +201,6 @@ impl <T> FromJsonField for Presence<Option<T>> where T: FromJson {
 }
 
 
-
 pub trait ToJsonField {
     fn to_json_field(&self, json: &mut BTreeMap<String,Json>, field: &str);
 }
