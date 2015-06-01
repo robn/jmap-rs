@@ -1,6 +1,6 @@
 macro_rules! make_record_type {
     ($record: ident, $partialrecord: ident, $recname: expr,
-     $($field: ident: $ty: ty => $prop: expr),*) => {
+     $($field: ident: $ty: ty => $jprop: expr),*) => {
         #[derive(Clone, PartialEq, Debug)]
         pub struct $record {
             id: String,
@@ -20,7 +20,7 @@ macro_rules! make_record_type {
             fn to_json(&self) -> Json {
                 let mut d = BTreeMap::<String,Json>::new();
                 self.id.to_json_field(&mut d, "id");
-                $(self.$field.to_json_field(&mut d, $prop);)*
+                $(self.$field.to_json_field(&mut d, $jprop);)*
                 Json::Object(d)
             }
         }
@@ -31,7 +31,7 @@ macro_rules! make_record_type {
                     Json::Object(ref o) => {
                         let mut r = $record::default();
                         r.id = try!(FromJsonField::from_json_field(o, "id"));
-                        $(r.$field = try!(FromJsonField::from_json_field(o, $prop));)*
+                        $(r.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
                         Ok(r)
                     }
                     _ => Err(ParseError::InvalidJsonType($recname.to_string())),
@@ -65,7 +65,7 @@ macro_rules! make_record_type {
             fn to_json(&self) -> Json {
                 let mut d = BTreeMap::<String,Json>::new();
                 self.id.to_json_field(&mut d, "id");
-                $(self.$field.to_json_field(&mut d, $prop);)*
+                $(self.$field.to_json_field(&mut d, $jprop);)*
                 Json::Object(d)
             }
         }
@@ -76,7 +76,7 @@ macro_rules! make_record_type {
                     Json::Object(ref o) => {
                         let mut r = $partialrecord::default();
                         r.id = try!(FromJsonField::from_json_field(o, "id"));
-                        $(r.$field = try!(FromJsonField::from_json_field(o, $prop));)*
+                        $(r.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
                         Ok(r)
                     }
                     _ => Err(ParseError::InvalidJsonType($recname.to_string())),
@@ -112,7 +112,7 @@ macro_rules! make_record_type {
                 p.id = Present(self.id.clone());
                 for prop in properties.iter() {
                     match prop.as_ref() {
-                        $($prop => p.$field = Present(self.$field.clone()),)*
+                        $($jprop => p.$field = Present(self.$field.clone()),)*
                         _ => ()
                     }
                 }
@@ -124,7 +124,7 @@ macro_rules! make_record_type {
 
 macro_rules! make_method_args_type {
     ($args: ident, $argsname: expr,
-     $($field: ident: $ty: ty => $prop: expr),*) => {
+     $($field: ident: $ty: ty => $jprop: expr),*) => {
         #[derive(Clone, PartialEq, Debug)]
         pub struct $args<R> where R: Record {
             pub _marker: PhantomData<R>,
@@ -143,7 +143,7 @@ macro_rules! make_method_args_type {
         impl<R: Record> ToJson for $args<R> {
             fn to_json(&self) -> Json {
                 let mut d = BTreeMap::<String,Json>::new();
-                $(self.$field.to_json_field(&mut d, $prop);)*
+                $(self.$field.to_json_field(&mut d, $jprop);)*
                 Json::Object(d)
             }
         }
@@ -153,7 +153,7 @@ macro_rules! make_method_args_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut args = <$args<R>>::default();
-                        $(args.$field = try!(FromJsonField::from_json_field(o, $prop));)*
+                        $(args.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
                         Ok(args)
                     },
                     _ => Err(ParseError::InvalidJsonType($argsname.to_string())),
