@@ -63,43 +63,10 @@ make_method_args_type!(SetResponseArgs, "SetResponseArgs",
 );
 
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct SetError {
-    pub typ:         String,
-    pub description: Option<String>,
-}
-
-impl Default for SetError {
-    fn default() -> SetError {
-        SetError {
-            typ:         "".to_string(),
-            description: None,
-        }
-    }
-}
-
-impl ToJson for SetError {
-    fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        self.typ.to_json_field(&mut d, "type");
-        self.description.to_json_field(&mut d, "description");
-        Json::Object(d)
-    }
-}
-
-impl FromJson for SetError {
-    fn from_json(json: &Json) -> Result<SetError,ParseError> {
-        match *json {
-            Json::Object(ref o) => {
-                let mut se = SetError::default();
-                se.typ         = try!(FromJsonField::from_json_field(o, "type"));
-                se.description = try!(FromJsonField::from_json_field(o, "description"));
-                Ok(se)
-            },
-            _ => Err(ParseError::InvalidJsonType("SetError".to_string())),
-        }
-    }
-}
+make_prop_type!(SetError, "SetError",
+    typ:         String         => "type",
+    description: Option<String> => "description"
+);
 
 
 #[derive(Clone, PartialEq, Debug)]

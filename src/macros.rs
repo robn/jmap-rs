@@ -1,3 +1,82 @@
+macro_rules! make_prop_enum_type {
+    ($prop: ident, $propname: expr, $default: ident,
+     $($ty: ident => $jprop: expr),*) => {
+        #[derive(Copy, Clone, PartialEq, Debug)]
+        pub enum $prop {
+            $($ty,)*
+        }
+
+        impl Default for $prop {
+            fn default() -> $prop { $prop::$default }
+        }
+
+        impl ToString for $prop {
+            fn to_string(&self) -> String {
+                match *self {
+                    $($prop::$ty => $jprop,)*
+                }.to_string()
+            }
+        }
+
+        impl ToJson for $prop {
+            fn to_json(&self) -> Json {
+                Json::String(self.to_string())
+            }
+        }
+
+        impl FromJson for $prop {
+            fn from_json(json: &Json) -> Result<$prop,ParseError> {
+                match *json {
+                    Json::String(ref v) => match v.as_ref() {
+                        $($jprop => Ok($prop::$ty),)*
+                        _ => Err(ParseError::InvalidStructure($propname.to_string())),
+                    },
+                    _ => Err(ParseError::InvalidJsonType($propname.to_string())),
+                }
+            }
+        }
+    }
+}
+
+macro_rules! make_prop_type {
+    ($prop: ident, $propname: expr,
+     $($field: ident: $ty: ty => $jprop: expr),*) => {
+        #[derive(Clone, PartialEq, Debug)]
+        pub struct $prop {
+            $($field: $ty,)*
+        }
+
+        impl Default for $prop {
+            fn default() -> $prop {
+                $prop {
+                    ..Default::default()
+                }
+            }
+        }
+
+        impl ToJson for $prop {
+            fn to_json(&self) -> Json {
+                let mut d = BTreeMap::<String,Json>::new();
+                $(self.$field.to_json_field(&mut d, $jprop);)*
+                Json::Object(d)
+            }
+        }
+
+        impl FromJson for $prop {
+            fn from_json(json: &Json) -> Result<$prop,ParseError> {
+                match *json {
+                    Json::Object(ref o) => {
+                        let mut prop = $prop::default();
+                        $(prop.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        Ok(prop)
+                    },
+                    _ => Err(ParseError::InvalidJsonType($propname.to_string())),
+                }
+            }
+        }
+    }
+}
+
 macro_rules! make_record_type {
     ($record: ident, $partialrecord: ident, $recname: expr,
      $($field: ident: $ty: ty => $jprop: expr),*) => {
