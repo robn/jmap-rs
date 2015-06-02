@@ -13,19 +13,19 @@ use record::{Record, PartialRecord};
 // individual components may be 0, which will present as None
 // only minimal range sanity checks are done
 #[derive(Clone, PartialEq, Debug)]
-pub struct Date {
+pub struct OptionDate {
     pub y: Option<u16>,
     pub m: Option<u8>,
     pub d: Option<u8>,
 }
 
-impl Default for Date {
-    fn default() -> Date {
-        Date { y: None, m: None, d: None }
+impl Default for OptionDate {
+    fn default() -> OptionDate {
+        OptionDate { y: None, m: None, d: None }
     }
 }
 
-impl ToString for Date {
+impl ToString for OptionDate {
     fn to_string(&self) -> String {
         format!("{:04}-{:02}-{:02}",
             match self.y {
@@ -44,19 +44,19 @@ impl ToString for Date {
     }
 }
 
-impl ToJson for Date {
+impl ToJson for OptionDate {
     fn to_json(&self) -> Json {
         Json::String(self.to_string())
     }
 }
 
-impl FromJson for Date {
-    fn from_json(json: &Json) -> Result<Date,ParseError> {
+impl FromJson for OptionDate {
+    fn from_json(json: &Json) -> Result<OptionDate,ParseError> {
         match *json {
             Json::String(ref v) => {
                 let (ok, err): (Vec<Result<u16,_>>,Vec<_>) = v.split('-').map(|ref s| s.parse::<u16>()).partition(|ref r| match **r { Ok(_) => true, Err(_) => false });
                 if let false = err.is_empty() {
-                    return Err(ParseError::InvalidStructure("Date".to_string()));
+                    return Err(ParseError::InvalidStructure("OptionDate".to_string()));
                 }
 
                 let dv: Vec<Option<u16>> = ok.into_iter().map(|n| match n.ok().unwrap() {
@@ -65,24 +65,24 @@ impl FromJson for Date {
                 }).collect();
 
                 if let false = dv.len() == 3 {
-                    return Err(ParseError::InvalidStructure("Date".to_string()));
+                    return Err(ParseError::InvalidStructure("OptionDate".to_string()));
                 }
 
-                Ok(Date {
+                Ok(OptionDate {
                     y: dv[0],
                     m: try!(match dv[1] {
-                        Some(n) if n > 12 => Err(ParseError::InvalidStructure("Date".to_string())),
+                        Some(n) if n > 12 => Err(ParseError::InvalidStructure("OptionDate".to_string())),
                         Some(n) => Ok(Some(n as u8)),
                         None => Ok(None),
                     }),
                     d: try!(match dv[2] {
-                        Some(n) if n > 31 => Err(ParseError::InvalidStructure("Date".to_string())),
+                        Some(n) if n > 31 => Err(ParseError::InvalidStructure("OptionDate".to_string())),
                         Some(n) => Ok(Some(n as u8)),
                         None => Ok(None),
                     }),
                 })
             },
-            _ => Err(ParseError::InvalidJsonType("Date".to_string())),
+            _ => Err(ParseError::InvalidJsonType("OptionDate".to_string())),
         }
     }
 }
@@ -192,8 +192,8 @@ make_record_type!(Contact, PartialContact, "Contact",
     last_name:           String                              => "lastName",
     suffix:              String                              => "suffix",
     nickname:            String                              => "nickname",
-    birthday:            Date                                => "birthday",
-    anniversary:         Date                                => "anniversary",
+    birthday:            OptionDate                          => "birthday",
+    anniversary:         OptionDate                          => "anniversary",
     company:             String                              => "company",
     department:          String                              => "department",
     job_title:           String                              => "jobTitle",
