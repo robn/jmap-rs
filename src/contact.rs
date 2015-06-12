@@ -7,6 +7,7 @@ use parse::*;
 use parse::Presence::*;
 use record;
 use record::{Record, PartialRecord};
+use types::File;
 
 
 // basic three-part Date type, YYYY-MM-DD
@@ -173,14 +174,6 @@ make_prop_type!(Address, "Address",
     region:   String         => "region",
     postcode: String         => "postcode",
     country:  String         => "country"
-);
-
-
-make_prop_type!(File, "File",
-    url:  String => "url",
-    typ:  Option<String> => "type",
-    name: Option<String> => "name",
-    size: Option<String> => "size"
 );
 
 
