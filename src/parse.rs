@@ -140,7 +140,6 @@ impl<T> FromJson for BTreeMap<String,T> where T: FromJson {
 }
 
 
-
 pub trait FromJsonField {
     fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError>;
 }
@@ -183,7 +182,7 @@ impl<T> FromJsonField for Presence<T> where T: FromJson {
         }
     }
 }
-impl <T> FromJsonField for Presence<Option<T>> where T: FromJson {
+impl<T> FromJsonField for Presence<Option<T>> where T: FromJson {
     fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
         match json.get(field) {
             Some(v) => {

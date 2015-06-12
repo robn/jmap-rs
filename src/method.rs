@@ -10,6 +10,7 @@ use parse::Presence::*;
 use record::Record;
 
 use calendar::Calendar;
+use calendarevent::CalendarEvent;
 use contact::Contact;
 use contactgroup::ContactGroup;
 use mailbox::Mailbox;
@@ -231,43 +232,51 @@ pub trait ClientId {
 
 
 make_methods!(RequestMethod, "RequestMethod", RequestError,
-    GetCalendars,           GetRequestArgs<Calendar>            => "getCalendars",
-    GetCalendarUpdates,     GetUpdatesRequestArgs<Calendar>     => "getCalendarUpdates",
-    SetCalendars,           SetRequestArgs<Calendar>            => "setCalendars",
+    GetCalendars,            GetRequestArgs<Calendar>             => "getCalendars",
+    GetCalendarUpdates,      GetUpdatesRequestArgs<Calendar>      => "getCalendarUpdates",
+    SetCalendars,            SetRequestArgs<Calendar>             => "setCalendars",
 
-    GetContacts,            GetRequestArgs<Contact>             => "getContacts",
-    GetContactUpdates,      GetUpdatesRequestArgs<Contact>      => "getContactUpdates",
-    SetContacts,            SetRequestArgs<Contact>             => "setContacts",
+    GetCalendarEvents,       GetRequestArgs<CalendarEvent>        => "getCalendarEvents",
+    GetCalendarEventUpdates, GetUpdatesRequestArgs<CalendarEvent> => "getCalendarEventUpdates",
+    SetCalendarEvents,       SetRequestArgs<CalendarEvent>        => "setCalendarEvents",
 
-    GetContactGroups,       GetRequestArgs<ContactGroup>        => "getContactGroups",
-    GetContactGroupUpdates, GetUpdatesRequestArgs<ContactGroup> => "getContactGroupUpdates",
-    SetContactGroups,       SetRequestArgs<ContactGroup>        => "setContactGroups",
+    GetContacts,             GetRequestArgs<Contact>              => "getContacts",
+    GetContactUpdates,       GetUpdatesRequestArgs<Contact>       => "getContactUpdates",
+    SetContacts,             SetRequestArgs<Contact>              => "setContacts",
 
-    GetMailboxes,           GetRequestArgs<Mailbox>             => "getMailboxes",
-    GetMailboxUpdates,      GetUpdatesRequestArgs<Mailbox>      => "getMailboxUpdates",
-    SetMailboxes,           SetRequestArgs<Mailbox>             => "setMailboxes",
+    GetContactGroups,        GetRequestArgs<ContactGroup>         => "getContactGroups",
+    GetContactGroupUpdates,  GetUpdatesRequestArgs<ContactGroup>  => "getContactGroupUpdates",
+    SetContactGroups,        SetRequestArgs<ContactGroup>         => "setContactGroups",
 
-    RequestError,           MethodError                         => "error"
+    GetMailboxes,            GetRequestArgs<Mailbox>              => "getMailboxes",
+    GetMailboxUpdates,       GetUpdatesRequestArgs<Mailbox>       => "getMailboxUpdates",
+    SetMailboxes,            SetRequestArgs<Mailbox>              => "setMailboxes",
+
+    RequestError,            MethodError                          => "error"
 );
 
 make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
-    Calendars,           GetResponseArgs<Calendar>           => "calendars",
-    CalendarUpdates,     GetUpdatesResponseArgs<Calendar>    => "calendarUpdates",
-    CalendarsSet,        SetResponseArgs<Calendar>           => "calendersSet",
+    Calendars,            GetResponseArgs<Calendar>             => "calendars",
+    CalendarUpdates,      GetUpdatesResponseArgs<Calendar>      => "calendarUpdates",
+    CalendarsSet,         SetResponseArgs<Calendar>             => "calendarsSet",
 
-    Contacts,            GetResponseArgs<Contact>             => "contacts",
-    ContactUpdates,      GetUpdatesResponseArgs<Contact>      => "contactUpdates",
-    ContactsSet,         SetResponseArgs<Contact>             => "contactsSet",
+    CalendarEvents,       GetResponseArgs<CalendarEvent>        => "calendarEvents",
+    CalendarEventUpdates, GetUpdatesResponseArgs<CalendarEvent> => "calendarEventUpdates",
+    CalendarEventsSet,    SetResponseArgs<CalendarEvent>        => "calendarEventsSet",
 
-    ContactGroups,       GetResponseArgs<ContactGroup>        => "contactGroups",
-    ContactGroupUpdates, GetUpdatesResponseArgs<ContactGroup> => "contactGroupUpdates",
-    ContactGroupsSet,    SetResponseArgs<ContactGroup>        => "contactGroupsSet",
+    Contacts,             GetResponseArgs<Contact>              => "contacts",
+    ContactUpdates,       GetUpdatesResponseArgs<Contact>       => "contactUpdates",
+    ContactsSet,          SetResponseArgs<Contact>              => "contactsSet",
 
-    Mailboxes,           GetResponseArgs<Mailbox>             => "mailboxes",
-    MailboxUpdates,      GetUpdatesResponseArgs<Mailbox>      => "mailboxUpdates",
-    MailboxesSet,        SetResponseArgs<Mailbox>             => "mailboxesSet",
+    ContactGroups,        GetResponseArgs<ContactGroup>         => "contactGroups",
+    ContactGroupUpdates,  GetUpdatesResponseArgs<ContactGroup>  => "contactGroupUpdates",
+    ContactGroupsSet,     SetResponseArgs<ContactGroup>         => "contactGroupsSet",
 
-    ResponseError,       MethodError                          => "error"
+    Mailboxes,            GetResponseArgs<Mailbox>              => "mailboxes",
+    MailboxUpdates,       GetUpdatesResponseArgs<Mailbox>       => "mailboxUpdates",
+    MailboxesSet,         SetResponseArgs<Mailbox>              => "mailboxesSet",
+
+    ResponseError,        MethodError                           => "error"
 );
 
 

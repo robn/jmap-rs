@@ -12,3 +12,4 @@ name = "jmap"
 [dependencies]
 rustc-serialize = "*"
 uuid = "*"
+chrono = "*"
