@@ -3,7 +3,7 @@ use std::string::ToString;
 use std::default::Default;
 use std::ops::Deref;
 use rustc_serialize::json::{Json,ToJson};
-use chrono::{DateTime,UTC,NaiveDate};
+use chrono::{DateTime,UTC,NaiveDate,NaiveDateTime};
 
 use parse::*;
 use parse::Presence::*;
@@ -19,6 +19,12 @@ impl Deref for Date  {
     type Target = DateTime<UTC>;
     fn deref<'a>(&'a self) -> &'a Self::Target {
         &self.0
+    }
+}
+
+impl Default for Date {
+    fn default() -> Date {
+        Date(DateTime::<UTC>::from_utc(NaiveDateTime::from_timestamp(0, 0), UTC))
     }
 }
 
@@ -50,6 +56,12 @@ impl Deref for LocalDate  {
     type Target = NaiveDate;
     fn deref<'a>(&'a self) -> &'a Self::Target {
         &self.0
+    }
+}
+
+impl Default for LocalDate {
+    fn default() -> LocalDate {
+        LocalDate(NaiveDate::from_yo(0,0))
     }
 }
 

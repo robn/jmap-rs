@@ -49,7 +49,7 @@ macro_rules! make_prop_type {
         impl Default for $prop {
             fn default() -> $prop {
                 $prop {
-                    ..Default::default()
+                    $($field: Default::default()),*
                 }
             }
         }
@@ -90,7 +90,7 @@ macro_rules! make_record_type {
             fn default() -> $record {
                 $record {
                     id: record::new_id(),
-                    ..Default::default()
+                    $($field: Default::default()),*
                 }
             }
         }
@@ -214,7 +214,7 @@ macro_rules! make_method_args_type {
             fn default() -> $args<R> {
                 $args::<R> {
                     _marker: PhantomData,
-                    ..Default::default()
+                    $($field: Default::default()),*
                 }
             }
         }

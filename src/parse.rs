@@ -51,6 +51,11 @@ impl<T> Presence<T> {
         }
     }
 }
+impl<T> Default for Presence<T> {
+    fn default() -> Presence<T> {
+        Absent
+    }
+}
 
 
 // trait for things that can be created from a JSON fragment
