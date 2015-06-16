@@ -13,14 +13,14 @@ CalDAV and CardDAV. See [jmap.io](http://jmap.io/) for more info.
 Everything you need to parse, generate and manipulate JMAP data structures from
 Rust. Its what you need if you're writing a JMAP server or client.
 
-(salada)[https://github.com/robn/salada] is a JMAP server that uses this
+[salada](https://github.com/robn/salada) is a JMAP server that uses this
 library.
 
 ## Status
 
-Support for round-tripping JMAP Contacts and Contact Groups and related methods
-into the corresponding Rust structures and back. More is being added as
-required by client projects (notably salada).
+Currently can round-trip JMAP Contact, ContactGroup, Calendar, CalendarEvent
+and Mailbox objects and CRUD methods into the corresponding Rust structures and
+back. More is being added as required by client projects (mainly salada).
 
 ## Credits and license
 
