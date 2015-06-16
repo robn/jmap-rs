@@ -11,7 +11,7 @@ make_prop_type!(File, "File",
     url:  String => "url",
     typ:  Option<String> => "type",
     name: Option<String> => "name",
-    size: Option<String> => "size"
+    size: Option<u64> => "size"
 );
 
 
