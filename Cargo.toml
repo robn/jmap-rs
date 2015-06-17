@@ -1,6 +1,6 @@
 [package]
 name        = "jmap"
-version     = "0.0.4"
+version     = "0.0.5"
 description = "JMAP parser/generator"
 license     = "MIT"
 authors     = [ "Robert Norris <robn@robn.io>" ]
