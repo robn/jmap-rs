@@ -3,7 +3,7 @@ use std::string::ToString;
 use std::default::Default;
 use std::ops::Deref;
 use rustc_serialize::json::{Json,ToJson};
-use chrono::{DateTime,UTC,NaiveDate,NaiveDateTime};
+use chrono::{DateTime,UTC,NaiveDateTime};
 
 use parse::*;
 use parse::Presence::*;
@@ -50,10 +50,10 @@ impl FromJson for Date {
 
 
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Debug)]
-pub struct LocalDate(pub NaiveDate);
+pub struct LocalDate(pub NaiveDateTime);
 
 impl Deref for LocalDate  {
-    type Target = NaiveDate;
+    type Target = NaiveDateTime;
     fn deref<'a>(&'a self) -> &'a Self::Target {
         &self.0
     }
@@ -61,7 +61,7 @@ impl Deref for LocalDate  {
 
 impl Default for LocalDate {
     fn default() -> LocalDate {
-        LocalDate(NaiveDate::from_yo(0,0))
+        LocalDate(NaiveDateTime::from_timestamp(0, 0))
     }
 }
 
@@ -81,7 +81,7 @@ impl FromJson for LocalDate {
     fn from_json(json: &Json) -> Result<LocalDate,ParseError> {
         match *json {
             Json::String(ref v) => {
-                match v.parse::<NaiveDate>() {
+                match v.parse::<NaiveDateTime>() {
                     Ok(dt) => Ok(LocalDate(dt)),
                     _      => Err(ParseError::InvalidStructure("LocalDate".to_string())),
                 }
