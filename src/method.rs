@@ -10,9 +10,9 @@ use parse::Presence::*;
 use record::Record;
 
 use calendar::Calendar;
-use calendarevent::CalendarEvent;
+use calendar_event::CalendarEvent;
 use contact::Contact;
-use contactgroup::ContactGroup;
+use contact_group::ContactGroup;
 use mailbox::Mailbox;
 
 use self::RequestMethod::*;

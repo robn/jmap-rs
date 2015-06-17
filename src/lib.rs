@@ -11,6 +11,6 @@ pub mod types;
 
 pub mod mailbox;
 pub mod calendar;
-pub mod calendarevent;
+pub mod calendar_event;
 pub mod contact;
-pub mod contactgroup;
+pub mod contact_group;
