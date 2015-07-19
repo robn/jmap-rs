@@ -178,9 +178,12 @@ impl<T> FromJsonField for Presence<T> where T: FromJson {
     fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError> {
         match json.get(field) {
             Some(ref v) => {
-                match T::from_json(&v) {
-                    Ok(j)  => Ok(Present(j)),
-                    Err(e) => Err(e),
+                match *v {
+                    &Json::Null => Ok(Absent),
+                    _ => match T::from_json(&v) {
+                        Ok(j)  => Ok(Present(j)),
+                        Err(e) => Err(e),
+                    }
                 }
             }
             None => Ok(Absent),
