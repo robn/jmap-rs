@@ -14,6 +14,7 @@ use calendar_event::CalendarEvent;
 use contact::Contact;
 use contact_group::ContactGroup;
 use mailbox::Mailbox;
+use message::Message;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -252,6 +253,10 @@ make_methods!(RequestMethod, "RequestMethod", RequestError,
     GetMailboxUpdates,       GetUpdatesRequestArgs<Mailbox>       => "getMailboxUpdates",
     SetMailboxes,            SetRequestArgs<Mailbox>              => "setMailboxes",
 
+    GetMessages,             GetRequestArgs<Message>              => "getMessages",
+    GetMessageUpdates,       GetUpdatesRequestArgs<Message>       => "getMessageUpdates",
+    SetMessages,             SetRequestArgs<Message>              => "setMessages",
+
     RequestError,            MethodError                          => "error"
 );
 
@@ -275,6 +280,10 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     Mailboxes,            GetResponseArgs<Mailbox>              => "mailboxes",
     MailboxUpdates,       GetUpdatesResponseArgs<Mailbox>       => "mailboxUpdates",
     MailboxesSet,         SetResponseArgs<Mailbox>              => "mailboxesSet",
+
+    Messages,             GetResponseArgs<Message>              => "messages",
+    MessageUpdates,       GetUpdatesResponseArgs<Message>       => "messageUpdates",
+    MessagesSet,          SetResponseArgs<Message>              => "messagesSet",
 
     ResponseError,        MethodError                           => "error"
 );
