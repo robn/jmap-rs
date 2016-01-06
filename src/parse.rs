@@ -59,7 +59,7 @@ impl<T> Default for Presence<T> {
 
 
 // trait for things that can be created from a JSON fragment
-pub trait FromJson {
+pub trait FromJson: Sized {
     fn from_json(json: &Json) -> Result<Self,ParseError>;
 }
 
@@ -145,7 +145,7 @@ impl<T> FromJson for BTreeMap<String,T> where T: FromJson {
 }
 
 
-pub trait FromJsonField {
+pub trait FromJsonField: Sized {
     fn from_json_field(json: &BTreeMap<String,Json>, field: &str) -> Result<Self,ParseError>;
 }
 
