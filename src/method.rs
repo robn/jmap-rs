@@ -40,10 +40,11 @@ make_method_args_type!(GetUpdatesRequestArgs, "GetUpdatesRequestArgs",
 );
 
 make_method_args_type!(GetUpdatesResponseArgs, "GetUpdatesResponseArgs",
-    old_state: String      => "oldState",
-    new_state: String      => "newState",
-    changed:   Vec<String> => "changed",
-    removed:   Vec<String> => "removed"
+    old_state:        String      => "oldState",
+    new_state:        String      => "newState",
+    has_more_updates: bool        => "hasMoreUpdates",
+    changed:          Vec<String> => "changed",
+    removed:          Vec<String> => "removed"
 );
 
 make_method_args_type!(SetRequestArgs, "SetRequestArgs",

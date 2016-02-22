@@ -33,11 +33,7 @@ impl ToString for MailboxRole {
             MailboxRole::Trash         => "trash".to_string(),
             MailboxRole::Spam          => "spam".to_string(),
             MailboxRole::Templates     => "templates".to_string(),
-            MailboxRole::Custom(ref r) => {
-                let mut s = "x-".to_string();
-                s.push_str(r.as_ref());
-                s
-            },
+            MailboxRole::Custom(ref r) => r.to_string(),
         }
     }
 }
@@ -61,10 +57,9 @@ impl FromJson for MailboxRole {
                 "spam"      => Ok(MailboxRole::Spam),
                 "templates" => Ok(MailboxRole::Templates),
                 r => {
-                    let bits: Vec<&str> = r.splitn(2, '-').collect();
-                    match bits.len() {
-                        2 => Ok(MailboxRole::Custom(bits[1].to_string())),
-                        _ => Err(ParseError::InvalidStructure("MailboxRole".to_string())),
+                    match r.starts_with("x-") {
+                        true => Ok(MailboxRole::Custom(r.to_string())),
+                        _    => Err(ParseError::InvalidStructure("MailboxRole".to_string())),
                     }
                 }
             },
@@ -78,7 +73,7 @@ make_record_type!(Mailbox, PartialMailbox, "Mailbox",
     name:                 String              => "name",
     parent_id:            Option<String>      => "parentId",
     role:                 Option<MailboxRole> => "role",
-    sort_order:           i32                 => "sortOrder",
+    sort_order:           u64                 => "sortOrder",
     must_be_only_mailbox: bool                => "mustBeOnlyMailbox",
     may_read_items:       bool                => "mayReadItems",
     may_add_items:        bool                => "mayAddItems",
@@ -86,8 +81,8 @@ make_record_type!(Mailbox, PartialMailbox, "Mailbox",
     may_create_child:     bool                => "mayCreateChild",
     may_rename:           bool                => "mayRename",
     may_delete:           bool                => "mayDelete",
-    total_messages:       usize               => "totalMessages",
-    unread_messages:      usize               => "unreadMessages",
-    total_threads:        usize               => "totalThreads",
-    unread_threads:       usize               => "unreadThreads"
+    total_messages:       u64                 => "totalMessages",
+    unread_messages:      u64                 => "unreadMessages",
+    total_threads:        u64                 => "totalThreads",
+    unread_threads:       u64                 => "unreadThreads"
 );

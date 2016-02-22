@@ -10,10 +10,10 @@ use parse::*;
 // subtypes shared across record types
 
 make_prop_type!(File, "File",
-    url:  String => "url",
-    typ:  Option<String> => "type",
-    name: Option<String> => "name",
-    size: Option<u64> => "size"
+    blob_id:  String         => "blobId",
+    typ:      Option<String> => "type",
+    name:     Option<String> => "name",
+    size:     Option<u64>    => "size"
 );
 
 

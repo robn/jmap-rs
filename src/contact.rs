@@ -126,17 +126,22 @@ make_prop_enum_type!(AddressType, "AddressType", Other,
 impl ContactType for AddressType { }
 
 
-// ContactInformation is a type, a value and an optional label
 #[derive(Clone, PartialEq, Debug)]
 pub struct ContactInformation<T: ContactType> {
-    pub typ:   T,
-    pub value: String,
-    pub label: Option<String>,
+    pub typ:        T,
+    pub value:      String,
+    pub label:      Option<String>,
+    pub is_default: bool,
 }
 
 impl<T> Default for ContactInformation<T> where T: ContactType {
     fn default() -> ContactInformation<T> {
-        ContactInformation { typ: T::default(), value: "".to_string(), label: None }
+        ContactInformation {
+            typ:        T::default(),
+            value:      "".to_string(),
+            label:      None,
+            is_default: false,
+        }
     }
 }
 
@@ -146,6 +151,7 @@ impl<T> ToJson for ContactInformation<T> where T: ContactType {
         self.typ.to_json_field(&mut d, "type");
         self.value.to_json_field(&mut d, "value");
         self.label.to_json_field(&mut d, "label");
+        self.is_default.to_json_field(&mut d, "isDefault");
         Json::Object(d)
     }
 }
@@ -155,9 +161,10 @@ impl<T> FromJson for ContactInformation<T> where T: ContactType {
         match *json {
             Json::Object(ref o) => {
                 let mut ci = ContactInformation::<T>::default();
-                ci.typ   = try!(FromJsonField::from_json_field(o, "type"));
-                ci.value = try!(FromJsonField::from_json_field(o, "value"));
-                ci.label = try!(FromJsonField::from_json_field(o, "label"));
+                ci.typ        = try!(FromJsonField::from_json_field(o, "type"));
+                ci.value      = try!(FromJsonField::from_json_field(o, "value"));
+                ci.label      = try!(FromJsonField::from_json_field(o, "label"));
+                ci.is_default = try!(FromJsonField::from_json_field(o, "isDefault"));
                 Ok(ci)
             },
             _ => Err(ParseError::InvalidJsonType("ContactInformation".to_string())),
@@ -167,13 +174,14 @@ impl<T> FromJson for ContactInformation<T> where T: ContactType {
 
 
 make_prop_type!(Address, "Address",
-    typ:      AddressType    => "type",
-    label:    Option<String> => "label",
-    street:   String         => "street",
-    locality: String         => "locality",
-    region:   String         => "region",
-    postcode: String         => "postcode",
-    country:  String         => "country"
+    typ:        AddressType    => "type",
+    label:      Option<String> => "label",
+    street:     String         => "street",
+    locality:   String         => "locality",
+    region:     String         => "region",
+    postcode:   String         => "postcode",
+    country:    String         => "country",
+    is_default: String         => "isDefault"
 );
 
 
@@ -191,7 +199,6 @@ make_record_type!(Contact, PartialContact, "Contact",
     department:          String                              => "department",
     job_title:           String                              => "jobTitle",
     emails:              Vec<ContactInformation<EmailType>>  => "emails",
-    default_email_index: u64                                 => "defaultEmailIndex",
     phones:              Vec<ContactInformation<PhoneType>>  => "phones",
     online:              Vec<ContactInformation<OnlineType>> => "online",
     addresses:           Vec<Address>                        => "addresses",
