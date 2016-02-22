@@ -18,6 +18,8 @@ library.
 
 ## Status
 
+Tracking the JMAP spec as at 2016-02-09.
+
 Currently can round-trip JMAP Contact, ContactGroup, Calendar, CalendarEvent
 and Mailbox objects and CRUD methods into the corresponding Rust structures and
 back. More is being added as required by client projects (mainly salada).
@@ -31,5 +33,5 @@ Copyright (c) 2015 Robert Norris. MIT license. See LICENSE.
 Pull requests are very welcome! For more general discussions about jmap-rs or
 JMAP, try the
 [jmap-discuss](https://groups.google.com/forum/#!forum/jmap-discuss) mailing
-list or [#jmap on Freenode IRC](http://webchat.freenode.net/?channels=pioneer).
+list or [#jmap on Freenode IRC](http://webchat.freenode.net/?channels=jmap).
 
