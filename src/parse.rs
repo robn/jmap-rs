@@ -2,7 +2,7 @@ use std::string::ToString;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
-use std::{i32,usize};
+use std::{i32,i64,usize};
 use rustc_serialize::json::{Json,ToJson};
 
 use parse::Presence::*;
@@ -79,6 +79,17 @@ impl FromJson for u64 {
             Json::U64(n) => Ok(n),
             Json::I64(n) => Ok(n as u64),
             _            => Err(ParseError::InvalidJsonType("u64".to_string())),
+        }
+    }
+}
+impl FromJson for i64 {
+    fn from_json(json: &Json) -> Result<i64,ParseError> {
+        match *json {
+            Json::U64(n) if n <= (i64::MAX as u64)
+                => Ok(n as i64),
+            Json::I64(n) if n >= i64::MIN && n <= i64::MAX
+                => Ok(n as i64),
+            _ => Err(ParseError::InvalidJsonType("i64".to_string())),
         }
     }
 }
