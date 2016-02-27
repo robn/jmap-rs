@@ -18,6 +18,7 @@ pub use self::contact_group::ContactGroup;
 
 pub mod mailbox;
 pub mod message;
+pub mod message_list;
 pub mod calendar;
 pub mod calendar_event;
 pub mod contact;
