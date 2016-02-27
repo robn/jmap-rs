@@ -1,9 +1,7 @@
 use std::collections::BTreeMap;
-use std::marker::PhantomData;
 use rustc_serialize::json::{Json,ToJson};
 
 use parse::*;
-use record::Record;
 use types::Date;
 
 make_prop_type!(FilterOperator, "FilterOperator",

@@ -205,6 +205,45 @@ macro_rules! make_method_args_type {
     ($args: ident, $argsname: expr,
      $($field: ident: $ty: ty => $jprop: expr),*) => {
         #[derive(Clone, PartialEq, Debug)]
+        pub struct $args {
+            $(pub $field: $ty),*
+        }
+
+        impl Default for $args {
+            fn default() -> $args {
+                $args {
+                    $($field: Default::default()),*
+                }
+            }
+        }
+
+        impl ToJson for $args {
+            fn to_json(&self) -> Json {
+                let mut d = BTreeMap::<String,Json>::new();
+                $(self.$field.to_json_field(&mut d, $jprop);)*
+                Json::Object(d)
+            }
+        }
+
+        impl FromJson for $args {
+            fn from_json(json: &Json) -> Result<$args,ParseError> {
+                match *json {
+                    Json::Object(ref o) => {
+                        let mut args = <$args>::default();
+                        $(args.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        Ok(args)
+                    },
+                    _ => Err(ParseError::InvalidJsonType($argsname.to_string())),
+                }
+            }
+        }
+    }
+}
+
+macro_rules! make_record_method_args_type {
+    ($args: ident, $argsname: expr,
+     $($field: ident: $ty: ty => $jprop: expr),*) => {
+        #[derive(Clone, PartialEq, Debug)]
         pub struct $args<R> where R: Record {
             pub _marker: PhantomData<R>,
             $(pub $field: $ty),*

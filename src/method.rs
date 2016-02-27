@@ -16,30 +16,32 @@ use contact_group::ContactGroup;
 use mailbox::Mailbox;
 use message::Message;
 
+use message_list::*;
+
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
 
 
-make_method_args_type!(GetRequestArgs, "GetRequestArgs",
+make_record_method_args_type!(GetRequestArgs, "GetRequestArgs",
     ids:         Presence<Vec<String>> => "ids",
     properties:  Presence<Vec<String>> => "properties",
     since_state: Presence<String>      => "sinceState"
 );
 
-make_method_args_type!(GetResponseArgs, "GetResponseArgs",
+make_record_method_args_type!(GetResponseArgs, "GetResponseArgs",
     state:     String                  => "state",
     list:      Option<Vec<R::Partial>> => "list",
     not_found: Option<Vec<String>>     => "notFound"
 );
 
-make_method_args_type!(GetUpdatesRequestArgs, "GetUpdatesRequestArgs",
+make_record_method_args_type!(GetUpdatesRequestArgs, "GetUpdatesRequestArgs",
     since_state:             String                => "sinceState",
     max_changes:             Presence<u64>         => "maxChanges",
     fetch_records:           Presence<bool>        => "fetchRecords",
     fetch_record_properties: Presence<Vec<String>> => "fetchRecordProperties"
 );
 
-make_method_args_type!(GetUpdatesResponseArgs, "GetUpdatesResponseArgs",
+make_record_method_args_type!(GetUpdatesResponseArgs, "GetUpdatesResponseArgs",
     old_state:        String      => "oldState",
     new_state:        String      => "newState",
     has_more_updates: bool        => "hasMoreUpdates",
@@ -47,14 +49,14 @@ make_method_args_type!(GetUpdatesResponseArgs, "GetUpdatesResponseArgs",
     removed:          Vec<String> => "removed"
 );
 
-make_method_args_type!(SetRequestArgs, "SetRequestArgs",
+make_record_method_args_type!(SetRequestArgs, "SetRequestArgs",
     if_in_state: Presence<String>                      => "ifInState",
     create:      Presence<BTreeMap<String,R::Partial>> => "create",
     update:      Presence<BTreeMap<String,R::Partial>> => "update",
     destroy:     Presence<Vec<String>>                 => "destroy"
 );
 
-make_method_args_type!(SetResponseArgs, "SetResponseArgs",
+make_record_method_args_type!(SetResponseArgs, "SetResponseArgs",
     old_state:     Option<String>              => "oldState",
     new_state:     String                      => "newState",
     created:       BTreeMap<String,R::Partial> => "created",
@@ -258,6 +260,9 @@ make_methods!(RequestMethod, "RequestMethod", RequestError,
     GetMessageUpdates,       GetUpdatesRequestArgs<Message>       => "getMessageUpdates",
     SetMessages,             SetRequestArgs<Message>              => "setMessages",
 
+    GetMessageList,          GetMessageListRequestArgs            => "getMessageList",
+    GetMessageListUpdates,   GetMessageListUpdatesRequestArgs     => "getMessageListUpdates",
+
     RequestError,            MethodError                          => "error"
 );
 
@@ -285,6 +290,9 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     Messages,             GetResponseArgs<Message>              => "messages",
     MessageUpdates,       GetUpdatesResponseArgs<Message>       => "messageUpdates",
     MessagesSet,          SetResponseArgs<Message>              => "messagesSet",
+
+    MessageList,          GetMessageListUpdatesRequestArgs      => "messageList",
+    MessageListUpdates,   GetMessageListUpdatesResponseArgs     => "messageListUpdates",
 
     ResponseError,        MethodError                           => "error"
 );
