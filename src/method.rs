@@ -17,6 +17,7 @@ use mailbox::Mailbox;
 use message::Message;
 
 use message_list::*;
+use message_import::*;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -260,6 +261,8 @@ make_methods!(RequestMethod, "RequestMethod", RequestError,
     GetMessageUpdates,       GetUpdatesRequestArgs<Message>       => "getMessageUpdates",
     SetMessages,             SetRequestArgs<Message>              => "setMessages",
 
+    ImportMessages,          ImportMessagesRequestArgs            => "importMessages",
+
     GetMessageList,          GetMessageListRequestArgs            => "getMessageList",
     GetMessageListUpdates,   GetMessageListUpdatesRequestArgs     => "getMessageListUpdates",
 
@@ -290,6 +293,8 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     Messages,             GetResponseArgs<Message>              => "messages",
     MessageUpdates,       GetUpdatesResponseArgs<Message>       => "messageUpdates",
     MessagesSet,          SetResponseArgs<Message>              => "messagesSet",
+
+    MessageImported,      ImportMessageResponseArgs             => "messagesImported",
 
     MessageList,          GetMessageListUpdatesRequestArgs      => "messageList",
     MessageListUpdates,   GetMessageListUpdatesResponseArgs     => "messageListUpdates",
