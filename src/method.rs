@@ -19,6 +19,7 @@ use message::Message;
 use message_list::*;
 use message_import::*;
 use message_copy::*;
+use message_report::*;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -264,6 +265,7 @@ make_methods!(RequestMethod, "RequestMethod", RequestError,
 
     ImportMessages,          ImportMessagesRequestArgs            => "importMessages",
     CopyMessages,            CopyMessagesRequestArgs              => "copyMessages",
+    ReportMessages,          ReportMessagesRequestArgs            => "reportMessages",
 
     GetMessageList,          GetMessageListRequestArgs            => "getMessageList",
     GetMessageListUpdates,   GetMessageListUpdatesRequestArgs     => "getMessageListUpdates",
@@ -298,6 +300,7 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
 
     MessageImported,      ImportMessagesResponseArgs            => "messagesImported",
     MessageCopied,        CopyMessagesResponseArgs              => "messagesCopied",
+    MessageReported,      ReportMessagesResponseArgs            => "messagesReported",
 
     MessageList,          GetMessageListUpdatesRequestArgs      => "messageList",
     MessageListUpdates,   GetMessageListUpdatesResponseArgs     => "messageListUpdates",
