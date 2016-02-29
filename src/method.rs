@@ -18,6 +18,7 @@ use message::Message;
 
 use message_list::*;
 use message_import::*;
+use message_copy::*;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
@@ -262,6 +263,7 @@ make_methods!(RequestMethod, "RequestMethod", RequestError,
     SetMessages,             SetRequestArgs<Message>              => "setMessages",
 
     ImportMessages,          ImportMessagesRequestArgs            => "importMessages",
+    CopyMessages,            CopyMessagesRequestArgs              => "copyMessages",
 
     GetMessageList,          GetMessageListRequestArgs            => "getMessageList",
     GetMessageListUpdates,   GetMessageListUpdatesRequestArgs     => "getMessageListUpdates",
@@ -295,6 +297,7 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     MessagesSet,          SetResponseArgs<Message>              => "messagesSet",
 
     MessageImported,      ImportMessageResponseArgs             => "messagesImported",
+    MessageCopied,        CopyMessagesResponseArgs              => "messagesCopied",
 
     MessageList,          GetMessageListUpdatesRequestArgs      => "messageList",
     MessageListUpdates,   GetMessageListUpdatesResponseArgs     => "messageListUpdates",

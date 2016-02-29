@@ -20,6 +20,7 @@ pub mod mailbox;
 pub mod message;
 pub mod message_list;
 pub mod message_import;
+pub mod message_copy;
 pub mod calendar;
 pub mod calendar_event;
 pub mod contact;
