@@ -18,7 +18,7 @@ library.
 
 ## Status
 
-Tracking the JMAP spec as at 2016-02-09.
+Tracking the JMAP spec as at 2016-02-29.
 
 Currently can round-trip JMAP Contact, ContactGroup, Calendar, CalendarEvent
 and Mailbox objects and CRUD methods into the corresponding Rust structures and
