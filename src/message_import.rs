@@ -21,7 +21,7 @@ make_method_args_type!(ImportMessagesRequestArgs, "ImportMessagesRequestArgs",
     messages:   BTreeMap<String,MessageImport> => "messages"
 );
 
-make_method_args_type!(ImportMessageResponseArgs, "ImportMessageResponseArgs",
+make_method_args_type!(ImportMessagesResponseArgs, "ImportMessagesResponseArgs",
     account_id:  String                            => "accountId",
     created:     BTreeMap<String,<Message as Record>::Partial> => "created",
     not_created: BTreeMap<String,SetError>         => "notCreated"

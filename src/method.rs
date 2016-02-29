@@ -296,7 +296,7 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     MessageUpdates,       GetUpdatesResponseArgs<Message>       => "messageUpdates",
     MessagesSet,          SetResponseArgs<Message>              => "messagesSet",
 
-    MessageImported,      ImportMessageResponseArgs             => "messagesImported",
+    MessageImported,      ImportMessagesResponseArgs            => "messagesImported",
     MessageCopied,        CopyMessagesResponseArgs              => "messagesCopied",
 
     MessageList,          GetMessageListUpdatesRequestArgs      => "messageList",
