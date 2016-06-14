@@ -18,5 +18,5 @@ pub trait Record: Default + ToJson + FromJson {
 }
 
 pub fn new_id() -> String {
-    Uuid::new_v4().to_hyphenated_string()
+    Uuid::new_v4().hyphenated().to_string()
 }

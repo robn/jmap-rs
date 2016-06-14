@@ -10,6 +10,6 @@ repository  = "https://github.com/robn/jmap-rs"
 name = "jmap"
 
 [dependencies]
-rustc-serialize = "0.*"
-uuid = "0.*"
-chrono = "0.*"
+rustc-serialize = "~0.3.19"
+uuid = { version = "~0.2.2", features = ["v4"] }
+chrono = "~0.2.22"
