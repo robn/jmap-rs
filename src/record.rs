@@ -1,7 +1,7 @@
-use std::default::Default;
+use crate::parse::{FromJson, Presence};
 use rustc_serialize::json::ToJson;
+use std::default::Default;
 use uuid::Uuid;
-use parse::{FromJson, Presence};
 
 pub trait PartialRecord: Default + ToJson + FromJson {
     fn id(&self) -> Presence<String>;

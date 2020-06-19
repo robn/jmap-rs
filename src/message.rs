@@ -1,14 +1,13 @@
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
-use std::string::ToString;
 use std::default::Default;
-use rustc_serialize::json::{Json,ToJson};
+use std::string::ToString;
 
-use parse::*;
-use parse::Presence::*;
-use record;
-use record::{Record, PartialRecord};
-use types::Date;
-
+use crate::parse::Presence::*;
+use crate::parse::*;
+use crate::record;
+use crate::record::{PartialRecord, Record};
+use crate::types::Date;
 
 make_prop_type!(Emailer, "Emailer",
     name:  String => "name",
@@ -25,7 +24,6 @@ make_prop_type!(Attachment, "Attachment",
     width:     Option<u64>    => "width",
     height:    Option<u64>    => "height"
 );
-
 
 make_record_type!(Message, PartialMessage, "Message",
     blob_id:                String                              => "blobId",

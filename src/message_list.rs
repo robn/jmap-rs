@@ -1,8 +1,8 @@
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
-use rustc_serialize::json::{Json,ToJson};
 
-use parse::*;
-use types::Date;
+use crate::parse::*;
+use crate::types::Date;
 
 make_prop_type!(FilterOperator, "FilterOperator",
     operator:   String      => "operator",
@@ -42,20 +42,18 @@ pub enum Filter {
 impl ToJson for Filter {
     fn to_json(&self) -> Json {
         match *self {
-            Filter::Operator(ref o)  => o.to_json(),
+            Filter::Operator(ref o) => o.to_json(),
             Filter::Condition(ref c) => c.to_json(),
         }
     }
 }
 
 impl FromJson for Filter {
-    fn from_json(json: &Json) -> Result<Filter,ParseError> {
+    fn from_json(json: &Json) -> Result<Filter, ParseError> {
         match *json {
-            Json::Object(ref o) => {
-                match o.get("operator") {
-                    Some(_) => Ok(Filter::Operator(try!(FilterOperator::from_json(json)))),
-                    None    => Ok(Filter::Condition(try!(FilterCondition::from_json(json)))),
-                }
+            Json::Object(ref o) => match o.get("operator") {
+                Some(_) => Ok(Filter::Operator(FilterOperator::from_json(json)?)),
+                None => Ok(Filter::Condition(FilterCondition::from_json(json)?)),
             },
             _ => Err(ParseError::InvalidJsonType("Filter".to_string())),
         }

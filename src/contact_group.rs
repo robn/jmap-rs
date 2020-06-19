@@ -1,13 +1,12 @@
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
-use std::string::ToString;
 use std::default::Default;
-use rustc_serialize::json::{Json,ToJson};
+use std::string::ToString;
 
-use parse::*;
-use parse::Presence::*;
-use record;
-use record::{Record, PartialRecord};
-
+use crate::parse::Presence::*;
+use crate::parse::*;
+use crate::record;
+use crate::record::{PartialRecord, Record};
 
 make_record_type!(ContactGroup, PartialContactGroup, "ContactGroup",
     name:        String      => "name",
