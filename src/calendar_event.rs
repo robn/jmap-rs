@@ -1,21 +1,20 @@
+use chrono::NaiveDateTime;
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
-use std::string::ToString;
 use std::default::Default;
 use std::ops::Deref;
-use rustc_serialize::json::{Json,ToJson};
-use chrono::NaiveDateTime;
+use std::string::ToString;
 
-use parse::*;
-use parse::Presence::*;
-use record;
-use record::{Record, PartialRecord};
-use types::{File,Date};
-
+use crate::parse::Presence::*;
+use crate::parse::*;
+use crate::record;
+use crate::record::{PartialRecord, Record};
+use crate::types::{Date, File};
 
 #[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Debug)]
 pub struct LocalDate(pub NaiveDateTime);
 
-impl Deref for LocalDate  {
+impl Deref for LocalDate {
     type Target = NaiveDateTime;
     fn deref<'a>(&'a self) -> &'a Self::Target {
         &self.0
@@ -41,19 +40,16 @@ impl ToJson for LocalDate {
 }
 
 impl FromJson for LocalDate {
-    fn from_json(json: &Json) -> Result<LocalDate,ParseError> {
+    fn from_json(json: &Json) -> Result<LocalDate, ParseError> {
         match *json {
-            Json::String(ref v) => {
-                match v.parse::<NaiveDateTime>() {
-                    Ok(dt) => Ok(LocalDate(dt)),
-                    _      => Err(ParseError::InvalidStructure("LocalDate".to_string())),
-                }
+            Json::String(ref v) => match v.parse::<NaiveDateTime>() {
+                Ok(dt) => Ok(LocalDate(dt)),
+                _ => Err(ParseError::InvalidStructure("LocalDate".to_string())),
             },
             _ => Err(ParseError::InvalidJsonType("LocalDate".to_string())),
         }
     }
 }
-
 
 make_prop_enum_type!(Frequency, "Frequency", Secondly, // XXX don't really want a default
     Yearly   => "yearly",
@@ -107,10 +103,10 @@ make_prop_type!(Participant, "Participant",
 );
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct ExceptionMap(pub BTreeMap<LocalDate,Option<PartialCalendarEvent>>);
+pub struct ExceptionMap(pub BTreeMap<LocalDate, Option<PartialCalendarEvent>>);
 
-impl Deref for ExceptionMap  {
-    type Target = BTreeMap<LocalDate,Option<PartialCalendarEvent>>;
+impl Deref for ExceptionMap {
+    type Target = BTreeMap<LocalDate, Option<PartialCalendarEvent>>;
     fn deref<'a>(&'a self) -> &'a Self::Target {
         &self.0
     }
@@ -118,8 +114,8 @@ impl Deref for ExceptionMap  {
 
 impl ToJson for ExceptionMap {
     fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
-        for (k,v) in self.iter() {
+        let mut d = BTreeMap::<String, Json>::new();
+        for (k, v) in self.iter() {
             d.insert(k.to_string(), v.to_json());
         }
         Json::Object(d)
@@ -127,25 +123,25 @@ impl ToJson for ExceptionMap {
 }
 
 impl FromJson for ExceptionMap {
-    fn from_json(json: &Json) -> Result<ExceptionMap,ParseError> {
+    fn from_json(json: &Json) -> Result<ExceptionMap, ParseError> {
         match *json {
             Json::Object(ref v) => {
-                let mut d = BTreeMap::<LocalDate,Option<PartialCalendarEvent>>::new();
-                for (k,v) in v.iter() {
-                    let date = try!(LocalDate::from_json(&Json::String(k.clone()))); // XXX awkward
-                    let obj = match *v { // XXX prefer FromJson for Option<T> but meh, compiler
+                let mut d = BTreeMap::<LocalDate, Option<PartialCalendarEvent>>::new();
+                for (k, v) in v.iter() {
+                    let date = LocalDate::from_json(&Json::String(k.clone()))?; // XXX awkward
+                    let obj = match *v {
+                        // XXX prefer FromJson for Option<T> but meh, compiler
                         Json::Null => None,
                         _ => {
-                            let p = try!(PartialCalendarEvent::from_json(v));
+                            let p = PartialCalendarEvent::from_json(v)?;
                             Some(p)
-                        },
+                        }
                     };
                     d.insert(date, obj);
-
                 }
                 Ok(ExceptionMap(d))
-            },
-            _ => Err(ParseError::InvalidJsonType("ExceptionMap".to_string()))
+            }
+            _ => Err(ParseError::InvalidJsonType("ExceptionMap".to_string())),
         }
     }
 }

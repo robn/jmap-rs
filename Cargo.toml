@@ -5,6 +5,7 @@ description = "JMAP parser/generator"
 license     = "MIT"
 authors     = [ "Robert Norris <robn@robn.io>" ]
 repository  = "https://github.com/robn/jmap-rs"
+edition     = "2018"
 
 [lib]
 name = "jmap"
@@ -13,3 +14,4 @@ name = "jmap"
 rustc-serialize = "~0.3.19"
 uuid = { version = "~0.2.2", features = ["v4"] }
 chrono = "~0.2.22"
+rustfix = "0.5.1"

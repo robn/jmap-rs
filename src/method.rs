@@ -1,28 +1,27 @@
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
 use std::default::Default;
 use std::error::Error;
-use std::marker::PhantomData;
 use std::fmt;
-use rustc_serialize::json::{Json,ToJson};
+use std::marker::PhantomData;
 
-use parse::*;
-use parse::Presence::*;
-use record::Record;
+use crate::parse::Presence::*;
+use crate::parse::*;
+use crate::record::Record;
 
-use calendar::Calendar;
-use calendar_event::CalendarEvent;
-use contact::Contact;
-use contact_group::ContactGroup;
-use mailbox::Mailbox;
-use message::Message;
+use crate::calendar::Calendar;
+use crate::calendar_event::CalendarEvent;
+use crate::contact::Contact;
+use crate::contact_group::ContactGroup;
+use crate::mailbox::Mailbox;
+use crate::message::Message;
 
-use message_list::*;
-use message_import::*;
-use message_copy::*;
+use crate::message_copy::*;
+use crate::message_import::*;
+use crate::message_list::*;
 
 use self::RequestMethod::*;
 use self::ResponseMethod::*;
-
 
 make_record_method_args_type!(GetRequestArgs, "GetRequestArgs",
     ids:         Presence<Vec<String>> => "ids",
@@ -69,12 +68,10 @@ make_record_method_args_type!(SetResponseArgs, "SetResponseArgs",
     not_destroyed: BTreeMap<String,SetError>   => "notDestroyed"
 );
 
-
 make_prop_type!(SetError, "SetError",
     typ:         String         => "type",
     description: Option<String> => "description"
 );
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct ErrorDescription(pub String);
@@ -86,14 +83,13 @@ impl ToJson for ErrorDescription {
 }
 
 impl FromJson for ErrorDescription {
-    fn from_json(json: &Json) -> Result<ErrorDescription,ParseError> {
+    fn from_json(json: &Json) -> Result<ErrorDescription, ParseError> {
         match String::from_json(json) {
             Ok(v) => Ok(ErrorDescription(v)),
             Err(e) => Err(e),
         }
     }
 }
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum MethodError {
@@ -122,73 +118,81 @@ pub enum MethodError {
 impl Error for MethodError {
     fn description(&self) -> &str {
         match *self {
-            MethodError::UnknownMethod(_)       => "unknown method",
-            MethodError::InvalidArguments(_)    => "invalid arguments for method",
-            MethodError::TooManyChanges         => "number of available changes is higher than requested max",
+            MethodError::UnknownMethod(_) => "unknown method",
+            MethodError::InvalidArguments(_) => "invalid arguments for method",
+            MethodError::TooManyChanges => {
+                "number of available changes is higher than requested max"
+            }
             MethodError::CannotCalculateChanges => "can't calculate changes from supplied state",
-            MethodError::StateMismatch          => "supplied state does not match current state",
-            MethodError::AccountNotFound        => "account not found",
-            MethodError::AccountNoMail          => "account does not contain any mail data",
-            MethodError::AccountReadOnly        => "account is read-only",
-            MethodError::AnchorNotFound         => "requested anchor not found in message list",
-            MethodError::NotFound               => "requested file not found",
-            MethodError::InvalidMailboxes       => "mailbox not found or invalid mailbox combination",
-            MethodError::MaxQuotaReached        => "max quota reached",
-            MethodError::FromAccountNotFound    => "from account not found",
-            MethodError::ToAccountNotFound      => "to account not found",
-            MethodError::FromAccountNoMail      => "from account does not contain any mail data",
-            MethodError::ToAccountNoMail        => "to account does not contain any mail data",
-            MethodError::AccountNoContacts      => "account does not contain any contact data",
-            MethodError::AccountNoCalendars     => "account does not contain any calendar data",
-            MethodError::UnsupportedSort        => "unable to sort on requested properties",
-            MethodError::InternalError(_)       => "internal error",
+            MethodError::StateMismatch => "supplied state does not match current state",
+            MethodError::AccountNotFound => "account not found",
+            MethodError::AccountNoMail => "account does not contain any mail data",
+            MethodError::AccountReadOnly => "account is read-only",
+            MethodError::AnchorNotFound => "requested anchor not found in message list",
+            MethodError::NotFound => "requested file not found",
+            MethodError::InvalidMailboxes => "mailbox not found or invalid mailbox combination",
+            MethodError::MaxQuotaReached => "max quota reached",
+            MethodError::FromAccountNotFound => "from account not found",
+            MethodError::ToAccountNotFound => "to account not found",
+            MethodError::FromAccountNoMail => "from account does not contain any mail data",
+            MethodError::ToAccountNoMail => "to account does not contain any mail data",
+            MethodError::AccountNoContacts => "account does not contain any contact data",
+            MethodError::AccountNoCalendars => "account does not contain any calendar data",
+            MethodError::UnsupportedSort => "unable to sort on requested properties",
+            MethodError::InternalError(_) => "internal error",
         }
     }
 }
 
 impl fmt::Display for MethodError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match *self {
-            MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
-            MethodError::InvalidArguments(Present(ref d)) => format!("invalid arguments for method ({})", d.0),
-            MethodError::InternalError(Present(ref d)) => format!("internal error ({})", d.0),
-            ref e => e.description().to_string(),
-        })
+        write!(
+            f,
+            "{}",
+            match *self {
+                MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
+                MethodError::InvalidArguments(Present(ref d)) =>
+                    format!("invalid arguments for method ({})", d.0),
+                MethodError::InternalError(Present(ref d)) => format!("internal error ({})", d.0),
+                ref e => e.to_string(),
+            }
+        )
     }
 }
 
 impl ToJson for MethodError {
     fn to_json(&self) -> Json {
-        let mut d = BTreeMap::<String,Json>::new();
+        let mut d = BTreeMap::<String, Json>::new();
 
         match *self {
-            MethodError::UnknownMethod(_)       => "unknownMethod",
-            MethodError::InvalidArguments(_)    => "invalidArguments",
-            MethodError::TooManyChanges         => "tooManyChanges",
+            MethodError::UnknownMethod(_) => "unknownMethod",
+            MethodError::InvalidArguments(_) => "invalidArguments",
+            MethodError::TooManyChanges => "tooManyChanges",
             MethodError::CannotCalculateChanges => "cannotCalculateChanges",
-            MethodError::StateMismatch          => "stateMismatch",
-            MethodError::AccountNotFound        => "accountNotFound",
-            MethodError::AccountNoMail          => "accountNoMail",
-            MethodError::AccountReadOnly        => "accountReadOnly",
-            MethodError::AnchorNotFound         => "anchorNotFound",
-            MethodError::NotFound               => "notFound",
-            MethodError::InvalidMailboxes       => "invalidMailboxes",
-            MethodError::MaxQuotaReached        => "maxQuotaReached",
-            MethodError::FromAccountNotFound    => "fromAccountNotFound",
-            MethodError::ToAccountNotFound      => "toAccountNotFound",
-            MethodError::FromAccountNoMail      => "fromAccountNoMail",
-            MethodError::ToAccountNoMail        => "toAccountNoMail",
-            MethodError::AccountNoContacts      => "accountNoContacts",
-            MethodError::AccountNoCalendars     => "accountNoCalendars",
-            MethodError::UnsupportedSort        => "unsupportedSort",
-            MethodError::InternalError(_)       => "internalError",
-        }.to_string().to_json_field(&mut d, "type");
+            MethodError::StateMismatch => "stateMismatch",
+            MethodError::AccountNotFound => "accountNotFound",
+            MethodError::AccountNoMail => "accountNoMail",
+            MethodError::AccountReadOnly => "accountReadOnly",
+            MethodError::AnchorNotFound => "anchorNotFound",
+            MethodError::NotFound => "notFound",
+            MethodError::InvalidMailboxes => "invalidMailboxes",
+            MethodError::MaxQuotaReached => "maxQuotaReached",
+            MethodError::FromAccountNotFound => "fromAccountNotFound",
+            MethodError::ToAccountNotFound => "toAccountNotFound",
+            MethodError::FromAccountNoMail => "fromAccountNoMail",
+            MethodError::ToAccountNoMail => "toAccountNoMail",
+            MethodError::AccountNoContacts => "accountNoContacts",
+            MethodError::AccountNoCalendars => "accountNoCalendars",
+            MethodError::UnsupportedSort => "unsupportedSort",
+            MethodError::InternalError(_) => "internalError",
+        }
+        .to_string()
+        .to_json_field(&mut d, "type");
 
         match *self {
-            MethodError::UnknownMethod(ref desc)    |
-            MethodError::InvalidArguments(ref desc) |
-            MethodError::InternalError(ref desc) =>
-                desc.to_json_field(&mut d, "description"),
+            MethodError::UnknownMethod(ref desc)
+            | MethodError::InvalidArguments(ref desc)
+            | MethodError::InternalError(ref desc) => desc.to_json_field(&mut d, "description"),
             _ => (),
         };
 
@@ -197,45 +201,49 @@ impl ToJson for MethodError {
 }
 
 impl FromJson for MethodError {
-    fn from_json(json: &Json) -> Result<MethodError,ParseError> {
+    fn from_json(json: &Json) -> Result<MethodError, ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let typ: String = try!(FromJsonField::from_json_field(o, "type"));
+                let typ: String = FromJsonField::from_json_field(o, "type")?;
                 match typ.as_ref() {
-                    "unknownMethod"          => Ok(MethodError::UnknownMethod(try!(FromJsonField::from_json_field(o, "description")))),
-                    "invalidArguments"       => Ok(MethodError::InvalidArguments(try!(FromJsonField::from_json_field(o, "description")))),
-                    "tooManyChanges"         => Ok(MethodError::TooManyChanges),
+                    "unknownMethod" => Ok(MethodError::UnknownMethod(
+                        FromJsonField::from_json_field(o, "description")?,
+                    )),
+                    "invalidArguments" => Ok(MethodError::InvalidArguments(
+                        FromJsonField::from_json_field(o, "description")?,
+                    )),
+                    "tooManyChanges" => Ok(MethodError::TooManyChanges),
                     "cannotCalculateChanges" => Ok(MethodError::CannotCalculateChanges),
-                    "stateMismatch"          => Ok(MethodError::StateMismatch),
-                    "accountNotFound"        => Ok(MethodError::AccountNotFound),
-                    "accountNoMail"          => Ok(MethodError::AccountNoMail),
-                    "accountReadOnly"        => Ok(MethodError::AccountReadOnly),
-                    "anchorNotFound"         => Ok(MethodError::AnchorNotFound),
-                    "notFound"               => Ok(MethodError::NotFound),
-                    "invalidMailboxes"       => Ok(MethodError::InvalidMailboxes),
-                    "maxQuotaReached"        => Ok(MethodError::MaxQuotaReached),
-                    "fromAccountNotFound"    => Ok(MethodError::FromAccountNotFound),
-                    "toAccountNotFound"      => Ok(MethodError::ToAccountNotFound),
-                    "fromAccountNoMail"      => Ok(MethodError::FromAccountNoMail),
-                    "toAccountNoMail"        => Ok(MethodError::ToAccountNoMail),
-                    "accountNoContacts"      => Ok(MethodError::AccountNoContacts),
-                    "accountNoCalendars"     => Ok(MethodError::AccountNoCalendars),
-                    "unsupportedSort"        => Ok(MethodError::UnsupportedSort),
-                    "internalError"          => Ok(MethodError::InternalError(try!(FromJsonField::from_json_field(o, "description")))),
+                    "stateMismatch" => Ok(MethodError::StateMismatch),
+                    "accountNotFound" => Ok(MethodError::AccountNotFound),
+                    "accountNoMail" => Ok(MethodError::AccountNoMail),
+                    "accountReadOnly" => Ok(MethodError::AccountReadOnly),
+                    "anchorNotFound" => Ok(MethodError::AnchorNotFound),
+                    "notFound" => Ok(MethodError::NotFound),
+                    "invalidMailboxes" => Ok(MethodError::InvalidMailboxes),
+                    "maxQuotaReached" => Ok(MethodError::MaxQuotaReached),
+                    "fromAccountNotFound" => Ok(MethodError::FromAccountNotFound),
+                    "toAccountNotFound" => Ok(MethodError::ToAccountNotFound),
+                    "fromAccountNoMail" => Ok(MethodError::FromAccountNoMail),
+                    "toAccountNoMail" => Ok(MethodError::ToAccountNoMail),
+                    "accountNoContacts" => Ok(MethodError::AccountNoContacts),
+                    "accountNoCalendars" => Ok(MethodError::AccountNoCalendars),
+                    "unsupportedSort" => Ok(MethodError::UnsupportedSort),
+                    "internalError" => Ok(MethodError::InternalError(
+                        FromJsonField::from_json_field(o, "description")?,
+                    )),
 
-                    _                        => Err(ParseError::InvalidStructure("MethodError".to_string())),
+                    _ => Err(ParseError::InvalidStructure("MethodError".to_string())),
                 }
-            },
+            }
             _ => Err(ParseError::InvalidJsonType("MethodError".to_string())),
         }
     }
 }
 
-
 pub trait ClientId {
     fn client_id(&self) -> String;
 }
-
 
 make_methods!(RequestMethod, "RequestMethod", RequestError,
     GetCalendars,            GetRequestArgs<Calendar>             => "getCalendars",
@@ -305,6 +313,5 @@ make_methods!(ResponseMethod, "ResponseMethod", ResponseError,
     ResponseError,        MethodError                           => "error"
 );
 
-
-make_batch!(RequestBatch,  RequestMethod);
+make_batch!(RequestBatch, RequestMethod);
 make_batch!(ResponseBatch, ResponseMethod);

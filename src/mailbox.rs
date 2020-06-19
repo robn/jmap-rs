@@ -1,13 +1,12 @@
+use rustc_serialize::json::{Json, ToJson};
 use std::collections::BTreeMap;
-use std::string::ToString;
 use std::default::Default;
-use rustc_serialize::json::{Json,ToJson};
+use std::string::ToString;
 
-use parse::*;
-use parse::Presence::*;
-use record;
-use record::{Record, PartialRecord};
-
+use crate::parse::Presence::*;
+use crate::parse::*;
+use crate::record;
+use crate::record::{PartialRecord, Record};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum MailboxRole {
@@ -25,14 +24,14 @@ pub enum MailboxRole {
 impl ToString for MailboxRole {
     fn to_string(&self) -> String {
         match *self {
-            MailboxRole::Inbox         => "inbox".to_string(),
-            MailboxRole::Archive       => "archive".to_string(),
-            MailboxRole::Drafts        => "drafts".to_string(),
-            MailboxRole::Outbox        => "outbox".to_string(),
-            MailboxRole::Sent          => "sent".to_string(),
-            MailboxRole::Trash         => "trash".to_string(),
-            MailboxRole::Spam          => "spam".to_string(),
-            MailboxRole::Templates     => "templates".to_string(),
+            MailboxRole::Inbox => "inbox".to_string(),
+            MailboxRole::Archive => "archive".to_string(),
+            MailboxRole::Drafts => "drafts".to_string(),
+            MailboxRole::Outbox => "outbox".to_string(),
+            MailboxRole::Sent => "sent".to_string(),
+            MailboxRole::Trash => "trash".to_string(),
+            MailboxRole::Spam => "spam".to_string(),
+            MailboxRole::Templates => "templates".to_string(),
             MailboxRole::Custom(ref r) => r.to_string(),
         }
     }
@@ -45,29 +44,26 @@ impl ToJson for MailboxRole {
 }
 
 impl FromJson for MailboxRole {
-    fn from_json(json: &Json) -> Result<MailboxRole,ParseError> {
+    fn from_json(json: &Json) -> Result<MailboxRole, ParseError> {
         match *json {
             Json::String(ref v) => match v.as_ref() {
-                "inbox"     => Ok(MailboxRole::Inbox),
-                "archive"   => Ok(MailboxRole::Archive),
-                "drafts"    => Ok(MailboxRole::Drafts),
-                "outbox"    => Ok(MailboxRole::Outbox),
-                "sent"      => Ok(MailboxRole::Sent),
-                "trash"     => Ok(MailboxRole::Trash),
-                "spam"      => Ok(MailboxRole::Spam),
+                "inbox" => Ok(MailboxRole::Inbox),
+                "archive" => Ok(MailboxRole::Archive),
+                "drafts" => Ok(MailboxRole::Drafts),
+                "outbox" => Ok(MailboxRole::Outbox),
+                "sent" => Ok(MailboxRole::Sent),
+                "trash" => Ok(MailboxRole::Trash),
+                "spam" => Ok(MailboxRole::Spam),
                 "templates" => Ok(MailboxRole::Templates),
-                r => {
-                    match r.starts_with("x-") {
-                        true => Ok(MailboxRole::Custom(r.to_string())),
-                        _    => Err(ParseError::InvalidStructure("MailboxRole".to_string())),
-                    }
-                }
+                r => match r.starts_with("x-") {
+                    true => Ok(MailboxRole::Custom(r.to_string())),
+                    _ => Err(ParseError::InvalidStructure("MailboxRole".to_string())),
+                },
             },
             _ => Err(ParseError::InvalidJsonType("MailboxRole".to_string())),
         }
     }
 }
-
 
 make_record_type!(Mailbox, PartialMailbox, "Mailbox",
     name:                 String              => "name",
