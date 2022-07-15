@@ -145,7 +145,7 @@ impl<T> FromJson for BTreeMap<String,T> where T: FromJson {
             Json::Object(ref o) => {
                 let mut m = BTreeMap::<String,T>::new();
                 for (k, v) in o.iter() {
-                    let vv = try!(T::from_json(v));
+                    let vv = T::from_json(v)?;
                     m.insert(k.clone(), vv);
                 }
                 Ok(m)
