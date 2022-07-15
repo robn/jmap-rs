@@ -152,7 +152,7 @@ impl fmt::Display for MethodError {
             MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
             MethodError::InvalidArguments(Present(ref d)) => format!("invalid arguments for method ({})", d.0),
             MethodError::InternalError(Present(ref d)) => format!("internal error ({})", d.0),
-            ref e => e.description().to_string(),
+            ref e => e.to_string(),
         })
     }
 }
