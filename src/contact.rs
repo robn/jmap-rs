@@ -71,16 +71,16 @@ impl FromJson for OptionDate {
 
                 Ok(OptionDate {
                     y: dv[0],
-                    m: try!(match dv[1] {
+                    m: match dv[1] {
                         Some(n) if n > 12 => Err(ParseError::InvalidStructure("OptionDate".to_string())),
                         Some(n) => Ok(Some(n as u8)),
                         None => Ok(None),
-                    }),
-                    d: try!(match dv[2] {
+                    }?,
+                    d: match dv[2] {
                         Some(n) if n > 31 => Err(ParseError::InvalidStructure("OptionDate".to_string())),
                         Some(n) => Ok(Some(n as u8)),
                         None => Ok(None),
-                    }),
+                    }?,
                 })
             },
             _ => Err(ParseError::InvalidJsonType("OptionDate".to_string())),
@@ -161,10 +161,10 @@ impl<T> FromJson for ContactInformation<T> where T: ContactType {
         match *json {
             Json::Object(ref o) => {
                 let mut ci = ContactInformation::<T>::default();
-                ci.typ        = try!(FromJsonField::from_json_field(o, "type"));
-                ci.value      = try!(FromJsonField::from_json_field(o, "value"));
-                ci.label      = try!(FromJsonField::from_json_field(o, "label"));
-                ci.is_default = try!(FromJsonField::from_json_field(o, "isDefault"));
+                ci.typ        = FromJsonField::from_json_field(o, "type")?;
+                ci.value      = FromJsonField::from_json_field(o, "value")?;
+                ci.label      = FromJsonField::from_json_field(o, "label")?;
+                ci.is_default = FromJsonField::from_json_field(o, "isDefault")?;
                 Ok(ci)
             },
             _ => Err(ParseError::InvalidJsonType("ContactInformation".to_string())),

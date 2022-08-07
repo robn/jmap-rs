@@ -152,7 +152,7 @@ impl fmt::Display for MethodError {
             MethodError::UnknownMethod(Present(ref d)) => format!("unknown method ({})", d.0),
             MethodError::InvalidArguments(Present(ref d)) => format!("invalid arguments for method ({})", d.0),
             MethodError::InternalError(Present(ref d)) => format!("internal error ({})", d.0),
-            ref e => e.description().to_string(),
+            ref e => e.to_string(),
         })
     }
 }
@@ -200,10 +200,10 @@ impl FromJson for MethodError {
     fn from_json(json: &Json) -> Result<MethodError,ParseError> {
         match *json {
             Json::Object(ref o) => {
-                let typ: String = try!(FromJsonField::from_json_field(o, "type"));
+                let typ: String = FromJsonField::from_json_field(o, "type")?;
                 match typ.as_ref() {
-                    "unknownMethod"          => Ok(MethodError::UnknownMethod(try!(FromJsonField::from_json_field(o, "description")))),
-                    "invalidArguments"       => Ok(MethodError::InvalidArguments(try!(FromJsonField::from_json_field(o, "description")))),
+                    "unknownMethod"          => Ok(MethodError::UnknownMethod(FromJsonField::from_json_field(o, "description")?)),
+                    "invalidArguments"       => Ok(MethodError::InvalidArguments(FromJsonField::from_json_field(o, "description")?)),
                     "tooManyChanges"         => Ok(MethodError::TooManyChanges),
                     "cannotCalculateChanges" => Ok(MethodError::CannotCalculateChanges),
                     "stateMismatch"          => Ok(MethodError::StateMismatch),
@@ -221,7 +221,7 @@ impl FromJson for MethodError {
                     "accountNoContacts"      => Ok(MethodError::AccountNoContacts),
                     "accountNoCalendars"     => Ok(MethodError::AccountNoCalendars),
                     "unsupportedSort"        => Ok(MethodError::UnsupportedSort),
-                    "internalError"          => Ok(MethodError::InternalError(try!(FromJsonField::from_json_field(o, "description")))),
+                    "internalError"          => Ok(MethodError::InternalError(FromJsonField::from_json_field(o, "description")?)),
 
                     _                        => Err(ParseError::InvalidStructure("MethodError".to_string())),
                 }

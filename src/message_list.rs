@@ -53,8 +53,8 @@ impl FromJson for Filter {
         match *json {
             Json::Object(ref o) => {
                 match o.get("operator") {
-                    Some(_) => Ok(Filter::Operator(try!(FilterOperator::from_json(json)))),
-                    None    => Ok(Filter::Condition(try!(FilterCondition::from_json(json)))),
+                    Some(_) => Ok(Filter::Operator(FilterOperator::from_json(json)?)),
+                    None    => Ok(Filter::Condition(FilterCondition::from_json(json)?)),
                 }
             },
             _ => Err(ParseError::InvalidJsonType("Filter".to_string())),

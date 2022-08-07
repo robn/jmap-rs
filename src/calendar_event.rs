@@ -132,11 +132,11 @@ impl FromJson for ExceptionMap {
             Json::Object(ref v) => {
                 let mut d = BTreeMap::<LocalDate,Option<PartialCalendarEvent>>::new();
                 for (k,v) in v.iter() {
-                    let date = try!(LocalDate::from_json(&Json::String(k.clone()))); // XXX awkward
+                    let date = LocalDate::from_json(&Json::String(k.clone()))?; // XXX awkward
                     let obj = match *v { // XXX prefer FromJson for Option<T> but meh, compiler
                         Json::Null => None,
                         _ => {
-                            let p = try!(PartialCalendarEvent::from_json(v));
+                            let p = PartialCalendarEvent::from_json(v)?;
                             Some(p)
                         },
                     };

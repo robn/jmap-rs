@@ -67,7 +67,7 @@ macro_rules! make_prop_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut prop = $prop::default();
-                        $(prop.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        $(prop.$field = FromJsonField::from_json_field(o, $jprop)?;)*
                         Ok(prop)
                     },
                     _ => Err(ParseError::InvalidJsonType($propname.to_string())),
@@ -109,8 +109,8 @@ macro_rules! make_record_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut r = $record::default();
-                        r.id = try!(FromJsonField::from_json_field(o, "id"));
-                        $(r.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        r.id = FromJsonField::from_json_field(o, "id")?;
+                        $(r.$field = FromJsonField::from_json_field(o, $jprop)?;)*
                         Ok(r)
                     }
                     _ => Err(ParseError::InvalidJsonType($recname.to_string())),
@@ -154,8 +154,8 @@ macro_rules! make_record_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut r = $partialrecord::default();
-                        r.id = try!(FromJsonField::from_json_field(o, "id"));
-                        $(r.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        r.id = FromJsonField::from_json_field(o, "id")?;
+                        $(r.$field = FromJsonField::from_json_field(o, $jprop)?;)*
                         Ok(r)
                     }
                     _ => Err(ParseError::InvalidJsonType($recname.to_string())),
@@ -230,7 +230,7 @@ macro_rules! make_method_args_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut args = <$args>::default();
-                        $(args.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        $(args.$field = FromJsonField::from_json_field(o, $jprop)?;)*
                         Ok(args)
                     },
                     _ => Err(ParseError::InvalidJsonType($argsname.to_string())),
@@ -271,7 +271,7 @@ macro_rules! make_record_method_args_type {
                 match *json {
                     Json::Object(ref o) => {
                         let mut args = <$args<R>>::default();
-                        $(args.$field = try!(FromJsonField::from_json_field(o, $jprop));)*
+                        $(args.$field = FromJsonField::from_json_field(o, $jprop)?;)*
                         Ok(args)
                     },
                     _ => Err(ParseError::InvalidJsonType($argsname.to_string())),
@@ -334,10 +334,10 @@ macro_rules! make_methods {
                         if let false = a.len() == 3 {
                             return Err(ParseError::InvalidStructure($setname.to_string()));
                         }
-                        let method = try!(String::from_json(&a[0]));
-                        let client_id = try!(String::from_json(&a[2]));
+                        let method = String::from_json(&a[0])?;
+                        let client_id = String::from_json(&a[2])?;
                         match method.as_ref() {
-                            $($methodname => Ok($method(try!(<$args>::from_json(&a[1])), client_id)),)*
+                            $($methodname => Ok($method(<$args>::from_json(&a[1])?, client_id)),)*
                             _ => Ok($error(MethodError::UnknownMethod(Present(ErrorDescription(method))), client_id)),
                         }
                     },
