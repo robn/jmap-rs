@@ -1,3 +1,5 @@
+*ARCHIVED*. JMAP as released looks nothing like this anymore. This is not going to help you at all.
+
 # jmap-rs
 
 A JMAP parser/generator in Rust
